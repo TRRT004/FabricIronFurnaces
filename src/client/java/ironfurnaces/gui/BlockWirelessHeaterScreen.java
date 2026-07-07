@@ -36,6 +36,10 @@ public class BlockWirelessHeaterScreen extends AbstractContainerScreen<BlockWire
         this.name = name;
     }
 
+    private void blit(net.minecraft.client.gui.GuiGraphicsExtractor extractor, net.minecraft.resources.Identifier texture, int x, int y, int width, int height, float u, float v, float uWidth, float vHeight) {
+        extractor.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, texture, x, y, u, v, width, height, 256, 256);
+    }
+
     @Override
     public void extractRenderState(net.minecraft.client.gui.GuiGraphicsExtractor extractor, int mouseX, int mouseY, float partialTick) {
         this.extractBackground(extractor, mouseX, mouseY, partialTick);
@@ -61,10 +65,10 @@ public class BlockWirelessHeaterScreen extends AbstractContainerScreen<BlockWire
     public void extractContents(net.minecraft.client.gui.GuiGraphicsExtractor extractor, int mouseX, int mouseY, float partialTick) {
         int i = (this.width - this.imageWidth) / 2;
         int j = (this.height - this.imageHeight) / 2;
-        extractor.blit(this.GUI, i, j, this.imageWidth, this.imageHeight, 0.0F, 0.0F, (float)this.imageWidth, (float)this.imageHeight);
+        this.blit(extractor, this.GUI, i, j, this.imageWidth, this.imageHeight, 0.0F, 0.0F, (float)this.imageWidth, (float)this.imageHeight);
         int k;
         k = this.getEnergyScaled(46);
-        extractor.blit(this.GUI, i + 65, j + 64, k + 1, 12, 176.0F, 0.0F, (float)(k + 1), 12.0F);
+        this.blit(extractor, this.GUI, i + 65, j + 64, k + 1, 12, 176.0F, 0.0F, (float)(k + 1), 12.0F);
     }
 
     public int getEnergyScaled(int pixels) {

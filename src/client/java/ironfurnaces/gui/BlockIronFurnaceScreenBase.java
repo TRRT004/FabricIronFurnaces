@@ -31,7 +31,7 @@ import java.util.Optional;
 
 public abstract class BlockIronFurnaceScreenBase<T extends BlockIronFurnaceScreenHandlerBase> extends AbstractContainerScreen<T> {
 
-    public static Identifier GUI;
+    public final Identifier GUI;
     public static final Identifier WIDGETS = net.minecraft.resources.Identifier.fromNamespaceAndPath(Reference.MOD_ID, "textures/gui/widgets.png");
     net.minecraft.world.entity.player.Inventory playerInv;
     Component name;
@@ -52,6 +52,10 @@ public abstract class BlockIronFurnaceScreenBase<T extends BlockIronFurnaceScree
         this.GUI = gui;
     }
 
+    private void blit(net.minecraft.client.gui.GuiGraphicsExtractor extractor, net.minecraft.resources.Identifier texture, int x, int y, int width, int height, float u, float v, float uWidth, float vHeight) {
+        extractor.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, texture, x, y, u, v, width, height, 256, 256);
+    }
+
     @Override
     public void extractRenderState(net.minecraft.client.gui.GuiGraphicsExtractor extractor, int mouseX, int mouseY, float partialTick) {
         this.extractBackground(extractor, mouseX, mouseY, partialTick);
@@ -63,13 +67,13 @@ public abstract class BlockIronFurnaceScreenBase<T extends BlockIronFurnaceScree
     @Override
     protected void extractLabels(net.minecraft.client.gui.GuiGraphicsExtractor extractor, int mouseX, int mouseY) {
         //drawString(matrices, this.font, "Energy: " + container.getEnergy(), 10, 10, 0xffffff);
-        extractor.text(this.font, this.playerInv.getDisplayName(), 7, this.imageHeight - 93, 4210752);
-        extractor.text(this.font, name, 7 + this.imageWidth / 2 - this.font.width(name) / 2, 6, 4210752);
+        extractor.text(this.font, this.playerInv.getDisplayName(), 7, this.imageHeight - 93, 4210752, false);
+        extractor.text(this.font, name, 7 + this.imageWidth / 2 - this.font.width(name) / 2, 6, 4210752, false);
 
         if (showInventoryButtons(handler).get() && getRedstoneMode(handler).get() == 4) {
             int comSub = getComSub(handler).get();
             int i = comSub > 9 ? 28 : 31;
-            extractor.text(this.font, comSub + "", i - 42, 90, 4210752);
+            extractor.text(this.font, comSub + "", i - 42, 90, 4210752, false);
         }
         int actualMouseX = mouseX - ((this.width - this.imageWidth) / 2);
         int actualMouseY = mouseY - ((this.height - this.imageHeight) / 2);
@@ -349,15 +353,15 @@ public abstract class BlockIronFurnaceScreenBase<T extends BlockIronFurnaceScree
         
         int i = (this.width - this.imageWidth) / 2;
         int j = (this.height - this.imageHeight) / 2;
-        extractor.blit(this.GUI, i, j, this.imageWidth, this.imageHeight, (float)(0), (float)(0), (float)(this.imageWidth), (float)(this.imageHeight));
+        this.blit(extractor, this.GUI, i, j, this.imageWidth, this.imageHeight, (float)(0), (float)(0), (float)(this.imageWidth), (float)(this.imageHeight));
         int k;
         if (((BlockIronFurnaceScreenHandlerBase)this.handler).isBurning()) {
             k = ((BlockIronFurnaceScreenHandlerBase)this.handler).getFuelProgress();
-            extractor.blit(this.GUI, i + 56, j + 36 + 12 - k, 14, k + 1, (float)(176), (float)(12 - k), (float)(14), (float)(k + 1));
+            this.blit(extractor, this.GUI, i + 56, j + 36 + 12 - k, 14, k + 1, (float)(176), (float)(12 - k), (float)(14), (float)(k + 1));
         }
 
         k = ((BlockIronFurnaceScreenHandlerBase)this.handler).getCookProgress();
-        extractor.blit(this.GUI, i + 79, j + 34, k + 1, 16, (float)(176), (float)(14), (float)(k + 1), (float)(16));
+        this.blit(extractor, this.GUI, i + 79, j + 34, k + 1, 16, (float)(176), (float)(14), (float)(k + 1), (float)(16));
 
         
         int actualMouseX = mouseX - ((this.width - this.imageWidth) / 2);
@@ -380,26 +384,26 @@ public abstract class BlockIronFurnaceScreenBase<T extends BlockIronFurnaceScree
                     if (comSub > 0) {
                         this.sub_button = true;
                         if (mouseX >= -31 && mouseX <= -18 && mouseY >= 86 && mouseY <= 99) {
-                            extractor.blit(this.WIDGETS, guiLeft - 31, guiTop + 86, 14, 14, (float)(14), (float)(0), (float)(14), (float)(14));
+                            this.blit(extractor, this.WIDGETS, guiLeft - 31, guiTop + 86, 14, 14, (float)(14), (float)(0), (float)(14), (float)(14));
                         } else {
-                            extractor.blit(this.WIDGETS, guiLeft - 31, guiTop + 86, 14, 14, (float)(0), (float)(0), (float)(14), (float)(14));
+                            this.blit(extractor, this.WIDGETS, guiLeft - 31, guiTop + 86, 14, 14, (float)(0), (float)(0), (float)(14), (float)(14));
                         }
                     } else {
                         this.sub_button = false;
-                        extractor.blit(this.WIDGETS, guiLeft - 31, guiTop + 86, 14, 14, (float)(28), (float)(0), (float)(14), (float)(14));
+                        this.blit(extractor, this.WIDGETS, guiLeft - 31, guiTop + 86, 14, 14, (float)(28), (float)(0), (float)(14), (float)(14));
                     }
 
                 } else {
                     if (comSub < 15) {
                         this.add_button = true;
                         if (mouseX >= -31 && mouseX <= -18 && mouseY >= 86 && mouseY <= 99) {
-                            extractor.blit(this.WIDGETS, guiLeft - 31, guiTop + 86, 14, 14, (float)(14), (float)(14), (float)(14), (float)(14));
+                            this.blit(extractor, this.WIDGETS, guiLeft - 31, guiTop + 86, 14, 14, (float)(14), (float)(14), (float)(14), (float)(14));
                         } else {
-                            extractor.blit(this.WIDGETS, guiLeft - 31, guiTop + 86, 14, 14, (float)(0), (float)(14), (float)(14), (float)(14));
+                            this.blit(extractor, this.WIDGETS, guiLeft - 31, guiTop + 86, 14, 14, (float)(0), (float)(14), (float)(14), (float)(14));
                         }
                     } else {
                         this.add_button = false;
-                        extractor.blit(this.WIDGETS, guiLeft - 31, guiTop + 86, 14, 14, (float)(28), (float)(14), (float)(14), (float)(14));
+                        this.blit(extractor, this.WIDGETS, guiLeft - 31, guiTop + 86, 14, 14, (float)(28), (float)(14), (float)(14), (float)(14));
 
                     }
                 }
@@ -411,14 +415,14 @@ public abstract class BlockIronFurnaceScreenBase<T extends BlockIronFurnaceScree
         int guiLeft = (this.width - this.imageWidth) / 2;
         int guiTop = (this.height - this.imageHeight) / 2;
         if (!showInventoryButtons(container).get()) {
-            extractor.blit(this.WIDGETS, guiLeft - 20, guiTop + 4, 23, 26, (float)(0), (float)(28), (float)(23), (float)(26));
+            this.blit(extractor, this.WIDGETS, guiLeft - 20, guiTop + 4, 23, 26, (float)(0), (float)(28), (float)(23), (float)(26));
         } else if (showInventoryButtons(container).get()) {
-            extractor.blit(this.WIDGETS, guiLeft - 56, guiTop + 4, 59, 107, (float)(0), (float)(54), (float)(59), (float)(107));
+            this.blit(extractor, this.WIDGETS, guiLeft - 56, guiTop + 4, 59, 107, (float)(0), (float)(54), (float)(59), (float)(107));
             if (mouseX >= -47 && mouseX <= -34 && mouseY >= 12 && mouseY <= 25 || getAutoInput(container).get()) {
-                extractor.blit(this.WIDGETS, guiLeft - 47, guiTop + 12, 14, 14, (float)(0), (float)(189), (float)(14), (float)(14));
+                this.blit(extractor, this.WIDGETS, guiLeft - 47, guiTop + 12, 14, 14, (float)(0), (float)(189), (float)(14), (float)(14));
             }
             if (mouseX >= -29 && mouseX <= -16 && mouseY >= 12 && mouseY <= 25 || getAutoOutput(container).get()) {
-                extractor.blit(this.WIDGETS, guiLeft - 29, guiTop + 12, 14, 14, (float)(14), (float)(189), (float)(14), (float)(14));
+                this.blit(extractor, this.WIDGETS, guiLeft - 29, guiTop + 12, 14, 14, (float)(14), (float)(189), (float)(14), (float)(14));
             }
             this.blitIO(extractor);
         }
@@ -431,19 +435,19 @@ public abstract class BlockIronFurnaceScreenBase<T extends BlockIronFurnaceScree
         int guiTop = (this.height - this.imageHeight) / 2;
         boolean flag = IronFurnacesClient.isShiftKeyDown();
         if (flag) {
-            extractor.blit(this.WIDGETS, guiLeft - 31, guiTop + 70, 14, 14, (float)(84), (float)(189), (float)(14), (float)(14));
+            this.blit(extractor, this.WIDGETS, guiLeft - 31, guiTop + 70, 14, 14, (float)(84), (float)(189), (float)(14), (float)(14));
         }
         int setting = getRedstoneMode(handler).get();
         if (setting == 0) {
-            extractor.blit(this.WIDGETS, guiLeft - 47, guiTop + 70, 14, 14, (float)(28), (float)(189), (float)(14), (float)(14));
+            this.blit(extractor, this.WIDGETS, guiLeft - 47, guiTop + 70, 14, 14, (float)(28), (float)(189), (float)(14), (float)(14));
         } else if (setting == 1 && !flag) {
-            extractor.blit(this.WIDGETS, guiLeft - 31, guiTop + 70, 14, 14, (float)(42), (float)(189), (float)(14), (float)(14));
+            this.blit(extractor, this.WIDGETS, guiLeft - 31, guiTop + 70, 14, 14, (float)(42), (float)(189), (float)(14), (float)(14));
         } else if (setting == 2) {
-            extractor.blit(this.WIDGETS, guiLeft - 31, guiTop + 70, 14, 14, (float)(98), (float)(189), (float)(14), (float)(14));
+            this.blit(extractor, this.WIDGETS, guiLeft - 31, guiTop + 70, 14, 14, (float)(98), (float)(189), (float)(14), (float)(14));
         } else if (setting == 3) {
-            extractor.blit(this.WIDGETS, guiLeft - 15, guiTop + 70, 14, 14, (float)(56), (float)(189), (float)(14), (float)(14));
+            this.blit(extractor, this.WIDGETS, guiLeft - 15, guiTop + 70, 14, 14, (float)(56), (float)(189), (float)(14), (float)(14));
         } else if (setting == 4) {
-            extractor.blit(this.WIDGETS, guiLeft - 47, guiTop + 86, 14, 14, (float)(70), (float)(189), (float)(14), (float)(14));
+            this.blit(extractor, this.WIDGETS, guiLeft - 47, guiTop + 86, 14, 14, (float)(70), (float)(189), (float)(14), (float)(14));
         }
 
     }
@@ -454,69 +458,69 @@ public abstract class BlockIronFurnaceScreenBase<T extends BlockIronFurnaceScree
         int[] settings = new int[]{0, 0, 0, 0, 0, 0};
         int setting = getSettingTop(handler).get();
         if (setting == 1) {
-            extractor.blit(this.WIDGETS, guiLeft - 32, guiTop + 31, 10, 10, (float)(0), (float)(161), (float)(10), (float)(10));
+            this.blit(extractor, this.WIDGETS, guiLeft - 32, guiTop + 31, 10, 10, (float)(0), (float)(161), (float)(10), (float)(10));
         } else if (setting == 2) {
-            extractor.blit(this.WIDGETS, guiLeft - 32, guiTop + 31, 10, 10, (float)(10), (float)(161), (float)(10), (float)(10));
+            this.blit(extractor, this.WIDGETS, guiLeft - 32, guiTop + 31, 10, 10, (float)(10), (float)(161), (float)(10), (float)(10));
         } else if (setting == 3) {
-            extractor.blit(this.WIDGETS, guiLeft - 32, guiTop + 31, 10, 10, (float)(20), (float)(161), (float)(10), (float)(10));
+            this.blit(extractor, this.WIDGETS, guiLeft - 32, guiTop + 31, 10, 10, (float)(20), (float)(161), (float)(10), (float)(10));
         } else if (setting == 4) {
-            extractor.blit(this.WIDGETS, guiLeft - 32, guiTop + 31, 10, 10, (float)(30), (float)(161), (float)(10), (float)(10));
+            this.blit(extractor, this.WIDGETS, guiLeft - 32, guiTop + 31, 10, 10, (float)(30), (float)(161), (float)(10), (float)(10));
         }
         settings[1] = setting;
 
         setting = getSettingBottom(handler).get();
         if (setting == 1) {
-            extractor.blit(this.WIDGETS, guiLeft - 32, guiTop + 55, 10, 10, (float)(0), (float)(161), (float)(10), (float)(10));
+            this.blit(extractor, this.WIDGETS, guiLeft - 32, guiTop + 55, 10, 10, (float)(0), (float)(161), (float)(10), (float)(10));
         } else if (setting == 2) {
-            extractor.blit(this.WIDGETS, guiLeft - 32, guiTop + 55, 10, 10, (float)(10), (float)(161), (float)(10), (float)(10));
+            this.blit(extractor, this.WIDGETS, guiLeft - 32, guiTop + 55, 10, 10, (float)(10), (float)(161), (float)(10), (float)(10));
         } else if (setting == 3) {
-            extractor.blit(this.WIDGETS, guiLeft - 32, guiTop + 55, 10, 10, (float)(20), (float)(161), (float)(10), (float)(10));
+            this.blit(extractor, this.WIDGETS, guiLeft - 32, guiTop + 55, 10, 10, (float)(20), (float)(161), (float)(10), (float)(10));
         } else if (setting == 4) {
-            extractor.blit(this.WIDGETS, guiLeft - 32, guiTop + 55, 10, 10, (float)(30), (float)(161), (float)(10), (float)(10));
+            this.blit(extractor, this.WIDGETS, guiLeft - 32, guiTop + 55, 10, 10, (float)(30), (float)(161), (float)(10), (float)(10));
         }
         settings[0] = setting;
         setting = getSettingFront(handler).get();
         if (setting == 1) {
-            extractor.blit(this.WIDGETS, guiLeft - 32, guiTop + 43, 10, 10, (float)(0), (float)(161), (float)(10), (float)(10));
+            this.blit(extractor, this.WIDGETS, guiLeft - 32, guiTop + 43, 10, 10, (float)(0), (float)(161), (float)(10), (float)(10));
         } else if (setting == 2) {
-            extractor.blit(this.WIDGETS, guiLeft - 32, guiTop + 43, 10, 10, (float)(10), (float)(161), (float)(10), (float)(10));
+            this.blit(extractor, this.WIDGETS, guiLeft - 32, guiTop + 43, 10, 10, (float)(10), (float)(161), (float)(10), (float)(10));
         } else if (setting == 3) {
-            extractor.blit(this.WIDGETS, guiLeft - 32, guiTop + 43, 10, 10, (float)(20), (float)(161), (float)(10), (float)(10));
+            this.blit(extractor, this.WIDGETS, guiLeft - 32, guiTop + 43, 10, 10, (float)(20), (float)(161), (float)(10), (float)(10));
         } else if (setting == 4) {
-            extractor.blit(this.WIDGETS, guiLeft - 32, guiTop + 43, 10, 10, (float)(30), (float)(161), (float)(10), (float)(10));
+            this.blit(extractor, this.WIDGETS, guiLeft - 32, guiTop + 43, 10, 10, (float)(30), (float)(161), (float)(10), (float)(10));
         }
         settings[getIndexFront(handler).get()] = setting;
         setting = getSettingBack(handler).get();
         if (setting == 1) {
-            extractor.blit(this.WIDGETS, guiLeft - 20, guiTop + 55, 10, 10, (float)(0), (float)(161), (float)(10), (float)(10));
+            this.blit(extractor, this.WIDGETS, guiLeft - 20, guiTop + 55, 10, 10, (float)(0), (float)(161), (float)(10), (float)(10));
         } else if (setting == 2) {
-            extractor.blit(this.WIDGETS, guiLeft - 20, guiTop + 55, 10, 10, (float)(10), (float)(161), (float)(10), (float)(10));
+            this.blit(extractor, this.WIDGETS, guiLeft - 20, guiTop + 55, 10, 10, (float)(10), (float)(161), (float)(10), (float)(10));
         } else if (setting == 3) {
-            extractor.blit(this.WIDGETS, guiLeft - 20, guiTop + 55, 10, 10, (float)(20), (float)(161), (float)(10), (float)(10));
+            this.blit(extractor, this.WIDGETS, guiLeft - 20, guiTop + 55, 10, 10, (float)(20), (float)(161), (float)(10), (float)(10));
         } else if (setting == 4) {
-            extractor.blit(this.WIDGETS, guiLeft - 20, guiTop + 55, 10, 10, (float)(30), (float)(161), (float)(10), (float)(10));
+            this.blit(extractor, this.WIDGETS, guiLeft - 20, guiTop + 55, 10, 10, (float)(30), (float)(161), (float)(10), (float)(10));
         }
         settings[getIndexBack(handler).get()] = setting;
         setting = getSettingLeft(handler).get();
         if (setting == 1) {
-            extractor.blit(this.WIDGETS, guiLeft - 44, guiTop + 43, 10, 10, (float)(0), (float)(161), (float)(10), (float)(10));
+            this.blit(extractor, this.WIDGETS, guiLeft - 44, guiTop + 43, 10, 10, (float)(0), (float)(161), (float)(10), (float)(10));
         } else if (setting == 2) {
-            extractor.blit(this.WIDGETS, guiLeft - 44, guiTop + 43, 10, 10, (float)(10), (float)(161), (float)(10), (float)(10));
+            this.blit(extractor, this.WIDGETS, guiLeft - 44, guiTop + 43, 10, 10, (float)(10), (float)(161), (float)(10), (float)(10));
         } else if (setting == 3) {
-            extractor.blit(this.WIDGETS, guiLeft - 44, guiTop + 43, 10, 10, (float)(20), (float)(161), (float)(10), (float)(10));
+            this.blit(extractor, this.WIDGETS, guiLeft - 44, guiTop + 43, 10, 10, (float)(20), (float)(161), (float)(10), (float)(10));
         } else if (setting == 4) {
-            extractor.blit(this.WIDGETS, guiLeft - 44, guiTop + 43, 10, 10, (float)(30), (float)(161), (float)(10), (float)(10));
+            this.blit(extractor, this.WIDGETS, guiLeft - 44, guiTop + 43, 10, 10, (float)(30), (float)(161), (float)(10), (float)(10));
         }
         settings[getIndexLeft(handler).get()] = setting;
         setting = getSettingRight(handler).get();
         if (setting == 1) {
-            extractor.blit(this.WIDGETS, guiLeft - 20, guiTop + 43, 10, 10, (float)(0), (float)(161), (float)(10), (float)(10));
+            this.blit(extractor, this.WIDGETS, guiLeft - 20, guiTop + 43, 10, 10, (float)(0), (float)(161), (float)(10), (float)(10));
         } else if (setting == 2) {
-            extractor.blit(this.WIDGETS, guiLeft - 20, guiTop + 43, 10, 10, (float)(10), (float)(161), (float)(10), (float)(10));
+            this.blit(extractor, this.WIDGETS, guiLeft - 20, guiTop + 43, 10, 10, (float)(10), (float)(161), (float)(10), (float)(10));
         } else if (setting == 3) {
-            extractor.blit(this.WIDGETS, guiLeft - 20, guiTop + 43, 10, 10, (float)(20), (float)(161), (float)(10), (float)(10));
+            this.blit(extractor, this.WIDGETS, guiLeft - 20, guiTop + 43, 10, 10, (float)(20), (float)(161), (float)(10), (float)(10));
         } else if (setting == 4) {
-            extractor.blit(this.WIDGETS, guiLeft - 20, guiTop + 43, 10, 10, (float)(30), (float)(161), (float)(10), (float)(10));
+            this.blit(extractor, this.WIDGETS, guiLeft - 20, guiTop + 43, 10, 10, (float)(30), (float)(161), (float)(10), (float)(10));
         }
         settings[getIndexRight(handler).get()] = setting;
         boolean input = false;
@@ -535,13 +539,13 @@ public abstract class BlockIronFurnaceScreenBase<T extends BlockIronFurnaceScree
             }
         }
         if (input || both) {
-            extractor.blit(this.WIDGETS, guiLeft + 55, guiTop + 16, 18, 18, (float)(0), (float)(171), (float)(18), (float)(18));
+            this.blit(extractor, this.WIDGETS, guiLeft + 55, guiTop + 16, 18, 18, (float)(0), (float)(171), (float)(18), (float)(18));
         }
         if (output || both) {
-            extractor.blit(this.WIDGETS, guiLeft + 111, guiTop + 30, 26, 26, (float)(0), (float)(203), (float)(26), (float)(26));
+            this.blit(extractor, this.WIDGETS, guiLeft + 111, guiTop + 30, 26, 26, (float)(0), (float)(203), (float)(26), (float)(26));
         }
         if (fuel) {
-            extractor.blit(this.WIDGETS, guiLeft + 55, guiTop + 52, 18, 18, (float)(18), (float)(171), (float)(18), (float)(18));
+            this.blit(extractor, this.WIDGETS, guiLeft + 55, guiTop + 52, 18, 18, (float)(18), (float)(171), (float)(18), (float)(18));
         }
     }
 
