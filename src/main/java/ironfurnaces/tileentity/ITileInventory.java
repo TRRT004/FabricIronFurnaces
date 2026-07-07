@@ -1,22 +1,21 @@
 package ironfurnaces.tileentity;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.util.math.Direction;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.core.Direction;
 
 public interface ITileInventory {
 
-    public int[] IgetSlotsForFace(Direction side);
+    public int[] getSlotsForFace(Direction side);
 
-    public boolean IcanExtractItem(int index, ItemStack stack, Direction direction);
+    public boolean canExtractItem(int index, ItemStack stack, Direction direction);
 
-    public String IgetName();
+    public String getContainerName();
 
-    public boolean IisItemValidForSlot(int index, ItemStack stack);
+    public boolean isItemValidForSlot(int index, ItemStack stack);
 
-    public ScreenHandler IcreateMenu(int i, PlayerInventory playerInventory, PlayerEntity playerEntity);
-
+    public AbstractContainerMenu createMenu(int i, net.minecraft.world.entity.player.Inventory playerInventory, Player playerEntity);
 
 }

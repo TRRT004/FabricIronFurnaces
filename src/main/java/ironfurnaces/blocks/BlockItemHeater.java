@@ -6,24 +6,25 @@ import ironfurnaces.items.ItemEnergyDisplay;
 import ironfurnaces.util.StringHelper;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.block.Block;
-import net.minecraft.client.item.TooltipContext;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.item.ItemStack;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.collection.DefaultedList;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.Block;
+
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Item;
+
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.Component;
+
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.NonNullList;
+import net.minecraft.world.level.Level;
 
 import java.util.List;
 
 public class BlockItemHeater extends BlockItem implements ItemEnergyDisplay {
-    public BlockItemHeater(Block block, Settings settings) {
-        super(block, settings);
+    public BlockItemHeater(Block block, Item.Properties properties) {
+        super(block, properties);
     }
 
 
@@ -31,47 +32,34 @@ public class BlockItemHeater extends BlockItem implements ItemEnergyDisplay {
 
     @Override
     @Environment(EnvType.CLIENT)
-    public void appendTooltip(ItemStack stack, World world, List<Text> tooltip, TooltipContext context) {
-        if (stack.hasNbt())
+    public void appendHoverText(ItemStack stack, Item.TooltipContext context, net.minecraft.world.item.component.TooltipDisplay display, java.util.function.Consumer<Component> tooltip, net.minecraft.world.item.TooltipFlag flag) {
+        net.minecraft.world.item.component.CustomData customData = stack.get(net.minecraft.core.component.DataComponents.CUSTOM_DATA);
+        if (customData != null)
         {
-            tooltip.add(new LiteralText(StringHelper.displayEnergy(stack.getNbt().getDouble("energy"), capacity).get(0)).setStyle(Style.EMPTY.withFormatting((Formatting.GOLD))));
+            tooltip.accept(Component.literal(StringHelper.displayEnergy(customData.copyTag().getDouble("energy").orElse(0.0), capacity).get(0)).withStyle(ChatFormatting.GOLD));
         }
         if (IronFurnacesClient.isShiftKeyDown())
         {
-            tooltip.add(new TranslatableText("tooltip." + Reference.MOD_ID + ".heater_block").setStyle(Style.EMPTY.withFormatting((Formatting.GRAY))));
-            tooltip.add(new TranslatableText("tooltip." + Reference.MOD_ID + ".heater_block1").setStyle(Style.EMPTY.withFormatting((Formatting.GRAY))));
-            tooltip.add(new TranslatableText("tooltip." + Reference.MOD_ID + ".heater_block2").setStyle(Style.EMPTY.withFormatting((Formatting.GRAY))));
-            tooltip.add(new TranslatableText("tooltip." + Reference.MOD_ID + ".heater_block3").setStyle(Style.EMPTY.withFormatting((Formatting.GRAY))));
+            tooltip.accept(Component.translatable("tooltip." + Reference.MOD_ID + ".heater_block").withStyle(ChatFormatting.GRAY));
+            tooltip.accept(Component.translatable("tooltip." + Reference.MOD_ID + ".heater_block1").withStyle(ChatFormatting.GRAY));
+            tooltip.accept(Component.translatable("tooltip." + Reference.MOD_ID + ".heater_block2").withStyle(ChatFormatting.GRAY));
+            tooltip.accept(Component.translatable("tooltip." + Reference.MOD_ID + ".heater_block3").withStyle(ChatFormatting.GRAY));
         }
         else
         {
-            tooltip.add(StringHelper.getShiftInfoText());
+            tooltip.accept(StringHelper.getShiftInfoText());
         }
 
-    }
-
-    @Override
-    public void appendStacks(ItemGroup group, DefaultedList<ItemStack> stacks) {
-        if (!isIn(group)) {
-            return;
-        }
-        ItemStack uncharged = new ItemStack(this);
-        ItemStack charged = new ItemStack(this);
-
-        uncharged.getOrCreateNbt().putDouble("energy", 0);
-        charged.getOrCreateNbt().putDouble("energy", capacity);
-
-        stacks.add(uncharged);
-        stacks.add(charged);
     }
 
     @Override
     public double getEnergy(ItemStack stack) {
-        if (!stack.hasNbt())
+        net.minecraft.world.item.component.CustomData customData = stack.get(net.minecraft.core.component.DataComponents.CUSTOM_DATA);
+        if (customData == null)
         {
             return 0.0;
         }
-        return Math.max(stack.getNbt().getDouble("energy"), 0.0);
+        return customData.copyTag().getDouble("energy").orElse(0.0);
     }
 
     @Override
@@ -81,7 +69,7 @@ public class BlockItemHeater extends BlockItem implements ItemEnergyDisplay {
 
     @Override
     public boolean showEnergy(ItemStack stack) {
-        return stack.hasNbt();
+        return stack.get(net.minecraft.core.component.DataComponents.CUSTOM_DATA) != null;
     }
 
     @Override

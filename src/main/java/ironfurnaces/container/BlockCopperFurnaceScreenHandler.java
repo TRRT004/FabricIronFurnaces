@@ -1,19 +1,19 @@
 package ironfurnaces.container;
 
 import ironfurnaces.init.Reference;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.screen.PropertyDelegate;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.Container;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.inventory.ContainerData;
 
 public class BlockCopperFurnaceScreenHandler extends BlockIronFurnaceScreenHandlerBase {
 
 
-    public BlockCopperFurnaceScreenHandler(int syncId, PlayerInventory playerInventory, PacketByteBuf buf) {
-        super(Reference.COPPER_FURNACE_SCREEN_HANDLER, syncId, playerInventory, buf);
+    public BlockCopperFurnaceScreenHandler(int syncId, net.minecraft.world.entity.player.Inventory playerInventory, BlockPos pos) {
+        super(Reference.COPPER_FURNACE_SCREEN_HANDLER, syncId, playerInventory, pos);
     }
 
-    public BlockCopperFurnaceScreenHandler(int syncId, PlayerInventory playerInventory, Inventory inventory, PropertyDelegate propertyDelegate) {
+    public BlockCopperFurnaceScreenHandler(int syncId, net.minecraft.world.entity.player.Inventory playerInventory, net.minecraft.world.entity.player.Inventory inventory, ContainerData propertyDelegate) {
         super(Reference.COPPER_FURNACE_SCREEN_HANDLER, syncId, playerInventory, inventory, propertyDelegate);
     }
 

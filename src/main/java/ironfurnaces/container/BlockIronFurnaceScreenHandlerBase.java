@@ -3,40 +3,47 @@ package ironfurnaces.container;
 import ironfurnaces.tileentity.BlockIronFurnaceTileBase;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.recipe.*;
-import net.minecraft.recipe.book.RecipeBookCategory;
-import net.minecraft.screen.*;
-import net.minecraft.screen.slot.Slot;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.Container;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.world.item.crafting.*;
+import net.minecraft.world.item.crafting.RecipeBookCategory;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.inventory.SimpleContainerData;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.inventory.RecipeBookMenu;
+import net.minecraft.world.inventory.ContainerListener;
+import net.minecraft.world.inventory.StackedContentsCompatible;
+import net.minecraft.world.entity.player.StackedItemContents;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 
 
-public abstract class BlockIronFurnaceScreenHandlerBase extends AbstractRecipeScreenHandler<Inventory> {
+public abstract class BlockIronFurnaceScreenHandlerBase extends AbstractContainerMenu {
 
-    private final Inventory inventory;
-    private final PropertyDelegate propertyDelegate;
+    private final Container inventory;
+    private final ContainerData propertyDelegate;
     private final RecipeType<? extends AbstractCookingRecipe> recipeType;
-    protected World world;
+    protected Level world;
     public BlockPos pos;
 
 
-    protected BlockIronFurnaceScreenHandlerBase(ScreenHandlerType<?> type, int syncId, PlayerInventory playerInventory, PacketByteBuf buf) {
-        this(type, syncId, playerInventory, new SimpleInventory(4), new ArrayPropertyDelegate(4));
-        pos = buf.readBlockPos();
-        world = playerInventory.player.world;
+    protected BlockIronFurnaceScreenHandlerBase(MenuType<?> type, int syncId, net.minecraft.world.entity.player.Inventory playerInventory, BlockPos pos) {
+        this(type, syncId, playerInventory, new SimpleContainer(4), new SimpleContainerData(4));
+        this.pos = pos;
+        world = playerInventory.player.level();
     }
 
-    protected BlockIronFurnaceScreenHandlerBase(ScreenHandlerType<?> type, int syncId, PlayerInventory playerInventory, Inventory inventory, PropertyDelegate propertyDelegate) {
+    protected BlockIronFurnaceScreenHandlerBase(MenuType<?> type, int syncId, net.minecraft.world.entity.player.Inventory playerInventory, Container inventory, ContainerData propertyDelegate) {
         super(type, syncId);
         this.recipeType = RecipeType.SMELTING;
-        checkSize(inventory, 4);
-        checkDataCount(propertyDelegate, 4);
+        checkContainerSize(inventory, 4);
+        checkContainerDataCount(propertyDelegate, 4);
         this.inventory = inventory;
         this.propertyDelegate = propertyDelegate;
         this.addSlot(new Slot(inventory, 0, 56, 17));
@@ -55,29 +62,22 @@ public abstract class BlockIronFurnaceScreenHandlerBase extends AbstractRecipeSc
             this.addSlot(new Slot(playerInventory, k, 8 + k * 18, 142));
         }
 
-        this.addProperties(propertyDelegate);
+        this.addDataSlots(propertyDelegate);
 
     }
 
-    @Override
-    public void addListener(ScreenHandlerListener listener) {
-        super.addListener(listener);
-    }
+    // addContainerListener removed - no longer overrideable in 1.21.5
 
-    public void populateRecipeFinder(RecipeMatcher finder) {
-        if (this.inventory instanceof RecipeInputProvider) {
-            ((RecipeInputProvider)this.inventory).provideRecipeInputs(finder);
+    public void populateRecipeFinder(StackedItemContents finder) {
+        if (this.inventory instanceof StackedContentsCompatible) {
+            ((StackedContentsCompatible)this.inventory).fillStackedContents(finder);
         }
 
     }
 
     public void clearCraftingSlots() {
-        this.getSlot(0).setStack(ItemStack.EMPTY);
-        this.getSlot(2).setStack(ItemStack.EMPTY);
-    }
-
-    public boolean matches(Recipe<? super Inventory> recipe) {
-        return recipe.matches(this.inventory, this.world);
+        this.getSlot(0).set(ItemStack.EMPTY);
+        this.getSlot(2).set(ItemStack.EMPTY);
     }
 
     public int getCraftingResultSlotIndex() {
@@ -97,64 +97,76 @@ public abstract class BlockIronFurnaceScreenHandlerBase extends AbstractRecipeSc
         return 3;
     }
 
-    public boolean canUse(PlayerEntity player) {
-        return this.inventory.canPlayerUse(player);
+    public boolean stillValid(Player player) {
+        return this.inventory.stillValid(player);
     }
 
-    public ItemStack transferSlot(PlayerEntity player, int index) {
+    @Override
+    public ItemStack quickMoveStack(Player player, int index) {
         ItemStack itemStack = ItemStack.EMPTY;
         Slot slot = (Slot)this.slots.get(index);
-        if (slot != null && slot.hasStack()) {
-            ItemStack itemStack2 = slot.getStack();
+        if (slot != null && slot.hasItem()) {
+            ItemStack itemStack2 = slot.getItem();
             itemStack = itemStack2.copy();
             if (index == 2) {
-                if (!this.insertItem(itemStack2, 3, 39, true)) {
+                if (!this.moveItemStackTo(itemStack2, 3, 39, true)) {
                     return ItemStack.EMPTY;
                 }
 
-                slot.onQuickTransfer(itemStack2, itemStack);
+                slot.onQuickCraft(itemStack2, itemStack);
             } else if (index != 1 && index != 0) {
-                if (this.isSmeltable(player.world, itemStack2)) {
-                    if (!this.insertItem(itemStack2, 0, 1, false)) {
+                if (this.isSmeltable(player.level(), itemStack2)) {
+                    if (!this.moveItemStackTo(itemStack2, 0, 1, false)) {
                         return ItemStack.EMPTY;
                     }
                 } else if (this.isFuel(itemStack2)) {
-                    if (!this.insertItem(itemStack2, 1, 2, false)) {
+                    if (!this.moveItemStackTo(itemStack2, 1, 2, false)) {
                         return ItemStack.EMPTY;
                     }
                 } else if (index >= 3 && index < 30) {
-                    if (!this.insertItem(itemStack2, 30, 39, false)) {
+                    if (!this.moveItemStackTo(itemStack2, 30, 39, false)) {
                         return ItemStack.EMPTY;
                     }
-                } else if (index >= 30 && index < 39 && !this.insertItem(itemStack2, 3, 30, false)) {
+                } else if (index >= 30 && index < 39 && !this.moveItemStackTo(itemStack2, 3, 30, false)) {
                     return ItemStack.EMPTY;
                 }
-            } else if (!this.insertItem(itemStack2, 3, 39, false)) {
+            } else if (!this.moveItemStackTo(itemStack2, 3, 39, false)) {
                 return ItemStack.EMPTY;
             }
 
             if (itemStack2.isEmpty()) {
-                slot.setStack(ItemStack.EMPTY);
+                slot.set(ItemStack.EMPTY);
             } else {
-                slot.markDirty();
+                slot.setChanged();
             }
 
             if (itemStack2.getCount() == itemStack.getCount()) {
                 return ItemStack.EMPTY;
             }
 
-            slot.onTakeItem(player, itemStack2);
+            slot.onTake(player, itemStack2);
         }
 
         return itemStack;
     }
 
-    protected boolean isSmeltable(World world, ItemStack itemStack) {
-        return world.getRecipeManager().getFirstMatch(this.recipeType, new SimpleInventory(new ItemStack[]{itemStack}), this.world).isPresent();
+    private static net.minecraft.resources.ResourceKey<RecipePropertySet> getPropertySetKey(RecipeType<?> type) {
+        if (type == RecipeType.BLASTING) {
+            return RecipePropertySet.BLAST_FURNACE_INPUT;
+        } else if (type == RecipeType.SMOKING) {
+            return RecipePropertySet.SMOKER_INPUT;
+        } else {
+            return RecipePropertySet.FURNACE_INPUT;
+        }
+    }
+
+    protected boolean isSmeltable(Level world, ItemStack itemStack) {
+        net.minecraft.resources.ResourceKey<RecipePropertySet> key = getPropertySetKey(this.recipeType);
+        return world.recipeAccess().propertySet(key).test(itemStack);
     }
 
     protected boolean isFuel(ItemStack itemStack) {
-        return BlockIronFurnaceTileBase.isItemFuel(itemStack);
+        return BlockIronFurnaceTileBase.isItemFuel(this.world, itemStack);
     }
 
     @Environment(EnvType.CLIENT)
@@ -179,10 +191,7 @@ public abstract class BlockIronFurnaceScreenHandlerBase extends AbstractRecipeSc
         return this.propertyDelegate.get(0) > 0;
     }
 
-    @Override
-    public RecipeBookCategory getCategory() {
-        return null;
-    }
+
 
     public boolean canInsertIntoSlot(int index) {
         return index != 1;
@@ -192,7 +201,7 @@ public abstract class BlockIronFurnaceScreenHandlerBase extends AbstractRecipeSc
         return pos;
     }
 
-    public World getWorld() {
+    public Level getLevel() {
         return world;
     }
 

@@ -10,8 +10,8 @@ import me.shedaniel.rei.api.common.entry.EntryStack;
 import me.shedaniel.rei.api.common.entry.type.VanillaEntryTypes;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.Identifier;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.resources.ResourceLocation;
 
 @Environment(EnvType.CLIENT)
 public class REIPlugin implements REIClientPlugin {
@@ -41,11 +41,11 @@ public class REIPlugin implements REIClientPlugin {
         }
     }
     private void addWorkstations(EntryStack<?>... stacks) {
-        CategoryRegistry.getInstance().addWorkstations(CategoryIdentifier.of(new Identifier("minecraft", "plugins/smelting")), stacks);
+        CategoryRegistry.getInstance().addWorkstations(CategoryIdentifier.of(ResourceLocation.fromNamespaceAndPath("minecraft", "plugins/smelting")), stacks);
     }
 
     private void addWorkstationsFuel(EntryStack<?>... stacks) {
-        CategoryRegistry.getInstance().addWorkstations(CategoryIdentifier.of(new Identifier("minecraft", "plugins/fuel")), stacks);
+        CategoryRegistry.getInstance().addWorkstations(CategoryIdentifier.of(ResourceLocation.fromNamespaceAndPath("minecraft", "plugins/fuel")), stacks);
     }
 
     @Override

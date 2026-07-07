@@ -1,6 +1,6 @@
 package ironfurnaces.config;
 
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.CompoundTag;
 
 public class FurnaceSettings {
     public int[] settings;
@@ -99,15 +99,15 @@ public class FurnaceSettings {
         return settings.length + autoIO.length + redstoneSettings.length + 1;
     }
 
-    public void readNbt(NbtCompound tag) {
-        this.settings = tag.getIntArray("Settings");
-        this.autoIO = tag.getIntArray("AutoIO");
-        this.redstoneSettings = tag.getIntArray("Redstone");
-        this.showButtons = tag.getInt("ShowButtons");
+    public void readNbt(CompoundTag tag) {
+        this.settings = tag.getIntArray("Settings").orElse(new int[]{0,0,0,0,0,0});
+        this.autoIO = tag.getIntArray("AutoIO").orElse(new int[]{0,0});
+        this.redstoneSettings = tag.getIntArray("Redstone").orElse(new int[]{0,0});
+        this.showButtons = tag.getInt("ShowButtons").orElse(0);
         onChanged();
     }
 
-    public void writeNbt(NbtCompound tag) {
+    public void writeNbt(CompoundTag tag) {
         tag.putIntArray("Settings", settings);
         tag.putIntArray("AutoIO", autoIO);
         tag.putIntArray("Redstone", redstoneSettings);

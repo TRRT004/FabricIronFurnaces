@@ -1,39 +1,38 @@
 package ironfurnaces.container;
 
 import ironfurnaces.init.Reference;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.ScreenHandlerListener;
-import net.minecraft.screen.slot.Slot;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.Container;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerListener;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.level.Level;
 
 
-public class BlockWirelessHeaterScreenHandler extends ScreenHandler {
+public class BlockWirelessHeaterScreenHandler extends AbstractContainerMenu {
 
-    private final Inventory inventory;
-    protected World world;
+    private final Container inventory;
+    protected Level world;
     public BlockPos pos;
     public int capacity = 100000;
 
-    public BlockWirelessHeaterScreenHandler(int syncId, PlayerInventory playerInventory, PacketByteBuf buf) {
-        this(syncId, playerInventory, new SimpleInventory(1));
-        pos = buf.readBlockPos();
-        world = playerInventory.player.world;
+    public BlockWirelessHeaterScreenHandler(int syncId, net.minecraft.world.entity.player.Inventory playerInventory, BlockPos pos) {
+        this(syncId, playerInventory, new SimpleContainer(1));
+        this.pos = pos;
+        world = playerInventory.player.level();
     }
 
-    public BlockWirelessHeaterScreenHandler(int syncId, PlayerInventory playerInventory, Inventory inventory) {
+    public BlockWirelessHeaterScreenHandler(int syncId, net.minecraft.world.entity.player.Inventory playerInventory, Container inventory) {
         super(Reference.WIRELESS_HEATER_SCREEN_HANDLER, syncId);
-        checkSize(inventory, 1);
+        checkContainerSize(inventory, 1);
         this.inventory = inventory;
-        inventory.onOpen(playerInventory.player);
+        inventory.startOpen(playerInventory.player);
 
-        this.addSlot(new SlotHeater(inventory,0, 80, 37));
+        this.addSlot(new SlotHeater(inventory, 0, 80, 37));
 
         int k;
         for(k = 0; k < 3; ++k) {
@@ -45,40 +44,40 @@ public class BlockWirelessHeaterScreenHandler extends ScreenHandler {
         for(k = 0; k < 9; ++k) {
             this.addSlot(new Slot(playerInventory, k, 8 + k * 18, 142));
         }
-        pos = BlockPos.ORIGIN;
+        this.pos = BlockPos.ORIGIN;
     }
 
     public BlockPos getPos() {
         return pos;
     }
 
-    public World getWorld() {
+    public Level getLevel() {
         return world;
     }
 
-    public boolean canUse(PlayerEntity player) {
-        return this.inventory.canPlayerUse(player);
+    public boolean stillValid(Player player) {
+        return this.inventory.stillValid(player);
     }
 
     @Override
-    public ItemStack transferSlot(PlayerEntity player, int index) {
+    public ItemStack quickMoveStack(Player player, int index) {
         ItemStack itemstack = ItemStack.EMPTY;
         Slot slot = this.slots.get(index);
-        if (slot != null && slot.hasStack()) {
-            ItemStack itemstack1 = slot.getStack();
+        if (slot != null && slot.hasItem()) {
+            ItemStack itemstack1 = slot.getItem();
             itemstack = itemstack1.copy();
             if (index < 1) {
-                if (!this.insertItem(itemstack1, 1, this.slots.size(), true)) {
+                if (!this.moveItemStackTo(itemstack1, 1, this.slots.size(), true)) {
                     return ItemStack.EMPTY;
                 }
-            } else if (!this.insertItem(itemstack1, 0, 1, false)) {
+            } else if (!this.moveItemStackTo(itemstack1, 0, 1, false)) {
                 return ItemStack.EMPTY;
             }
 
             if (itemstack1.isEmpty()) {
-                slot.setStack(ItemStack.EMPTY);
+                slot.set(ItemStack.EMPTY);
             } else {
-                slot.markDirty();
+                slot.setChanged();
             }
         }
 

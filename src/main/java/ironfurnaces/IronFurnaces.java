@@ -4,13 +4,13 @@ import ironfurnaces.init.Reference;
 import ironfurnaces.tileentity.BlockIronFurnaceTileBase;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.resources.Identifier;
+import net.minecraft.core.BlockPos;
 
 public class IronFurnaces implements ModInitializer {
 
-    public static Identifier furnace_packet = new Identifier(Reference.MOD_ID, "furnace_settings");
+    public static Identifier furnace_packet = Identifier.fromNamespaceAndPath(Reference.MOD_ID, "furnace_settings");
 
     @Override
     public void onInitialize() {
@@ -25,12 +25,12 @@ public class IronFurnaces implements ModInitializer {
             int set = buf.readInt();
             BlockPos pos = new BlockPos(x, y, z);
             server.execute(() -> {
-                BlockEntity tee = player.world.getBlockEntity(pos);
+                BlockEntity tee = player.level().getBlockEntity(pos);
                 if (tee != null && tee instanceof BlockIronFurnaceTileBase) {
                     BlockIronFurnaceTileBase te = (BlockIronFurnaceTileBase) tee;
 
                     te.furnaceSettings.set(index, set);
-                    te.getWorld().updateListeners(pos, te.getWorld().getBlockState(pos).getBlock().getDefaultState(), te.getWorld().getBlockState(pos), 2);
+                    te.getLevel().sendBlockUpdated(pos, te.getLevel().getBlockState(pos), te.getLevel().getBlockState(pos), 2);
 
                 }
             });

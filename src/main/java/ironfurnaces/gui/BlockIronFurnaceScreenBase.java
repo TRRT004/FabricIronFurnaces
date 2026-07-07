@@ -9,33 +9,32 @@ import ironfurnaces.init.Reference;
 import ironfurnaces.tileentity.BlockIronFurnaceTileBase;
 import ironfurnaces.util.StringHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.ingame.HandledScreen;
-import net.minecraft.client.render.GameRenderer;
-import net.minecraft.client.sound.PositionedSoundInstance;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.sounds.SoundEvents;
+
+import net.minecraft.network.chat.Component;
+
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.List;
 import java.util.Optional;
 
-public abstract class BlockIronFurnaceScreenBase<T extends BlockIronFurnaceScreenHandlerBase> extends HandledScreen<T> {
+public abstract class BlockIronFurnaceScreenBase<T extends BlockIronFurnaceScreenHandlerBase> extends AbstractContainerScreen<T> {
 
-    public static Identifier GUI;
-    public static final Identifier WIDGETS = new Identifier(Reference.MOD_ID + ":" + "textures/gui/widgets.png");
-    PlayerInventory playerInv;
-    Text name;
+    public static ResourceLocation GUI;
+    public static final ResourceLocation WIDGETS = net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "textures/gui/widgets.png");
+    net.minecraft.world.entity.player.Inventory playerInv;
+    Component name;
     /** The X size of the inventory window in pixels. */
     protected int xSize = 176;
     /** The Y size of the inventory window in pixels. */
@@ -44,7 +43,7 @@ public abstract class BlockIronFurnaceScreenBase<T extends BlockIronFurnaceScree
     public boolean add_button;
     public boolean sub_button;
 
-    public BlockIronFurnaceScreenBase(T handler, PlayerInventory inv, Text name, Identifier gui) {
+    public BlockIronFurnaceScreenBase(T handler, net.minecraft.world.entity.player.Inventory inv, Component name, ResourceLocation gui) {
         super(handler, inv, name);
         playerInv = inv;
         this.name = name;
@@ -52,329 +51,326 @@ public abstract class BlockIronFurnaceScreenBase<T extends BlockIronFurnaceScree
     }
 
     @Override
-    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        this.renderBackground(matrices);
-        super.render(matrices, mouseX, mouseY, delta);
-        this.drawMouseoverTooltip(matrices, mouseX, mouseY);
+    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float delta) {
+        this.renderBackground(guiGraphics, mouseX, mouseY, delta);
+        super.render(guiGraphics, mouseX, mouseY, delta);
+        this.renderTooltip(guiGraphics, mouseX, mouseY);
     }
 
 
     @Override
-    protected void drawForeground(MatrixStack matrices, int mouseX, int mouseY) {
-        //drawString(Minecraft.getInstance().fontRenderer, "Energy: " + container.getEnergy(), 10, 10, 0xffffff);
-        this.client.textRenderer.draw(matrices, this.playerInv.getDisplayName(), 7, this.ySize - 93, 4210752);
-        this.client.textRenderer.draw(matrices, name, 7 + this.xSize / 2 - this.client.textRenderer.getWidth(name) / 2, 6, 4210752);
+    protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY) {
+        //drawString(matrices, this.font, "Energy: " + container.getEnergy(), 10, 10, 0xffffff);
+        guiGraphics.drawString(this.font, this.playerInv.getDisplayName(), 7, this.imageHeight - 93, 4210752);
+        guiGraphics.drawString(this.font, name, 7 + this.imageWidth / 2 - this.font.width(name) / 2, 6, 4210752);
 
         if (showInventoryButtons(handler).get() && getRedstoneMode(handler).get() == 4) {
             int comSub = getComSub(handler).get();
             int i = comSub > 9 ? 28 : 31;
-            this.client.textRenderer.draw(matrices, comSub + "", i - 42, 90, 4210752);
+            guiGraphics.drawString(this.font, comSub + "", i - 42, 90, 4210752);
         }
-        int actualMouseX = mouseX - ((this.width - this.xSize) / 2);
-        int actualMouseY = mouseY - ((this.height - this.ySize) / 2);
+        int actualMouseX = mouseX - ((this.width - this.imageWidth) / 2);
+        int actualMouseY = mouseY - ((this.height - this.imageHeight) / 2);
 
-        this.addTooltips(matrices, actualMouseX, actualMouseY);
+        this.addTooltips(guiGraphics, actualMouseX, actualMouseY);
 
     }
 
-    private static Optional<Boolean> getAutoInput(ScreenHandler handler) {
+    private static Optional<Boolean> getAutoInput(AbstractContainerMenu handler) {
         if (handler instanceof BlockIronFurnaceScreenHandlerBase) {
             BlockPos pos = ((BlockIronFurnaceScreenHandlerBase) handler).getPos();
-            World world = ((BlockIronFurnaceScreenHandlerBase) handler).getWorld();
+            Level world = ((BlockIronFurnaceScreenHandlerBase) handler).getLevel();
             return pos != null ? Optional.of(((BlockIronFurnaceTileBase) world.getBlockEntity(pos)).getAutoInput() == 1) : Optional.empty();
         } else {
             return Optional.empty();
         }
     }
 
-    private static Optional<Boolean> getAutoOutput(ScreenHandler handler) {
+    private static Optional<Boolean> getAutoOutput(AbstractContainerMenu handler) {
         if (handler instanceof BlockIronFurnaceScreenHandlerBase) {
             BlockPos pos = ((BlockIronFurnaceScreenHandlerBase) handler).getPos();
-            World world = ((BlockIronFurnaceScreenHandlerBase) handler).getWorld();
+            Level world = ((BlockIronFurnaceScreenHandlerBase) handler).getLevel();
             return pos != null ? Optional.of(((BlockIronFurnaceTileBase) world.getBlockEntity(pos)).getAutoOutput() == 1) : Optional.empty();
         } else {
             return Optional.empty();
         }
     }
 
-    private static Optional<Boolean> showInventoryButtons(ScreenHandler handler) {
+    private static Optional<Boolean> showInventoryButtons(AbstractContainerMenu handler) {
         if (handler instanceof BlockIronFurnaceScreenHandlerBase) {
             BlockPos pos = ((BlockIronFurnaceScreenHandlerBase) handler).getPos();
-            World world = ((BlockIronFurnaceScreenHandlerBase) handler).getWorld();
+            Level world = ((BlockIronFurnaceScreenHandlerBase) handler).getLevel();
             return pos != null ? Optional.of(((BlockIronFurnaceTileBase) world.getBlockEntity(pos)).getShowButtons() == 1) : Optional.empty();
         } else {
             return Optional.empty();
         }
     }
 
-    private static Optional<Integer> getRedstoneMode(ScreenHandler handler) {
+    private static Optional<Integer> getRedstoneMode(AbstractContainerMenu handler) {
         if (handler instanceof BlockIronFurnaceScreenHandlerBase) {
             BlockPos pos = ((BlockIronFurnaceScreenHandlerBase) handler).getPos();
-            World world = ((BlockIronFurnaceScreenHandlerBase) handler).getWorld();
+            Level world = ((BlockIronFurnaceScreenHandlerBase) handler).getLevel();
             return pos != null ? Optional.of(((BlockIronFurnaceTileBase) world.getBlockEntity(pos)).getRedstoneSetting()) : Optional.empty();
         } else {
             return Optional.empty();
         }
     }
 
-    private static Optional<Integer> getComSub(ScreenHandler handler) {
+    private static Optional<Integer> getComSub(AbstractContainerMenu handler) {
         if (handler instanceof BlockIronFurnaceScreenHandlerBase) {
             BlockPos pos = ((BlockIronFurnaceScreenHandlerBase) handler).getPos();
-            World world = ((BlockIronFurnaceScreenHandlerBase) handler).getWorld();
+            Level world = ((BlockIronFurnaceScreenHandlerBase) handler).getLevel();
             return pos != null ? Optional.of(((BlockIronFurnaceTileBase) world.getBlockEntity(pos)).getRedstoneComSub()) : Optional.empty();
         } else {
             return Optional.empty();
         }
     }
 
-    public static Text getTooltip(BlockIronFurnaceTileBase te, int index)
+    public static Component getTooltip(BlockIronFurnaceTileBase te, int index)
     {
         switch (te.furnaceSettings.get(index))
         {
             case 1:
-                return new TranslatableText("tooltip." + Reference.MOD_ID + ".gui_input");
+                return Component.translatable("tooltip." + Reference.MOD_ID + ".gui_input");
             case 2:
-                return new TranslatableText("tooltip." + Reference.MOD_ID + ".gui_output");
+                return Component.translatable("tooltip." + Reference.MOD_ID + ".gui_output");
             case 3:
-                return new TranslatableText("tooltip." + Reference.MOD_ID + ".gui_input_output");
+                return Component.translatable("tooltip." + Reference.MOD_ID + ".gui_input_output");
             case 4:
-                return new TranslatableText("tooltip." + Reference.MOD_ID + ".gui_fuel");
+                return Component.translatable("tooltip." + Reference.MOD_ID + ".gui_fuel");
             default:
-                return new TranslatableText("tooltip." + Reference.MOD_ID + ".gui_none");
+                return Component.translatable("tooltip." + Reference.MOD_ID + ".gui_none");
         }
     }
 
-    private static Optional<Text> getTooltip(ScreenHandler handler, int index) {
+    private static Optional<Component> getTooltip(AbstractContainerMenu handler, int index) {
         if (handler instanceof BlockIronFurnaceScreenHandlerBase) {
             BlockPos pos = ((BlockIronFurnaceScreenHandlerBase) handler).getPos();
-            World world = ((BlockIronFurnaceScreenHandlerBase) handler).getWorld();
+            Level world = ((BlockIronFurnaceScreenHandlerBase) handler).getLevel();
             return pos != null ? Optional.of(getTooltip((BlockIronFurnaceTileBase) world.getBlockEntity(pos), index)) : Optional.empty();
         } else {
             return Optional.empty();
         }
     }
 
-    private static Optional<Integer> getSettingTop(ScreenHandler handler) {
+    private static Optional<Integer> getSettingTop(AbstractContainerMenu handler) {
         if (handler instanceof BlockIronFurnaceScreenHandlerBase) {
             BlockPos pos = ((BlockIronFurnaceScreenHandlerBase) handler).getPos();
-            World world = ((BlockIronFurnaceScreenHandlerBase) handler).getWorld();
+            Level world = ((BlockIronFurnaceScreenHandlerBase) handler).getLevel();
             return pos != null ? Optional.of(((BlockIronFurnaceTileBase) world.getBlockEntity(pos)).getSettingTop()) : Optional.empty();
         } else {
             return Optional.empty();
         }
     }
 
-    private static Optional<Integer> getSettingBottom(ScreenHandler handler) {
+    private static Optional<Integer> getSettingBottom(AbstractContainerMenu handler) {
         if (handler instanceof BlockIronFurnaceScreenHandlerBase) {
             BlockPos pos = ((BlockIronFurnaceScreenHandlerBase) handler).getPos();
-            World world = ((BlockIronFurnaceScreenHandlerBase) handler).getWorld();
+            Level world = ((BlockIronFurnaceScreenHandlerBase) handler).getLevel();
             return pos != null ? Optional.of(((BlockIronFurnaceTileBase) world.getBlockEntity(pos)).getSettingBottom()) : Optional.empty();
         } else {
             return Optional.empty();
         }
     }
 
-    private static Optional<Integer> getSettingFront(ScreenHandler handler) {
+    private static Optional<Integer> getSettingFront(AbstractContainerMenu handler) {
         if (handler instanceof BlockIronFurnaceScreenHandlerBase) {
             BlockPos pos = ((BlockIronFurnaceScreenHandlerBase) handler).getPos();
-            World world = ((BlockIronFurnaceScreenHandlerBase) handler).getWorld();
+            Level world = ((BlockIronFurnaceScreenHandlerBase) handler).getLevel();
             return pos != null ? Optional.of(((BlockIronFurnaceTileBase) world.getBlockEntity(pos)).getSettingFront()) : Optional.empty();
         } else {
             return Optional.empty();
         }
     }
 
-    private static Optional<Integer> getSettingBack(ScreenHandler handler) {
+    private static Optional<Integer> getSettingBack(AbstractContainerMenu handler) {
         if (handler instanceof BlockIronFurnaceScreenHandlerBase) {
             BlockPos pos = ((BlockIronFurnaceScreenHandlerBase) handler).getPos();
-            World world = ((BlockIronFurnaceScreenHandlerBase) handler).getWorld();
+            Level world = ((BlockIronFurnaceScreenHandlerBase) handler).getLevel();
             return pos != null ? Optional.of(((BlockIronFurnaceTileBase) world.getBlockEntity(pos)).getSettingBack()) : Optional.empty();
         } else {
             return Optional.empty();
         }
     }
 
-    private static Optional<Integer> getSettingLeft(ScreenHandler handler) {
+    private static Optional<Integer> getSettingLeft(AbstractContainerMenu handler) {
         if (handler instanceof BlockIronFurnaceScreenHandlerBase) {
             BlockPos pos = ((BlockIronFurnaceScreenHandlerBase) handler).getPos();
-            World world = ((BlockIronFurnaceScreenHandlerBase) handler).getWorld();
+            Level world = ((BlockIronFurnaceScreenHandlerBase) handler).getLevel();
             return pos != null ? Optional.of(((BlockIronFurnaceTileBase) world.getBlockEntity(pos)).getSettingLeft()) : Optional.empty();
         } else {
             return Optional.empty();
         }
     }
 
-    private static Optional<Integer> getSettingRight(ScreenHandler handler) {
+    private static Optional<Integer> getSettingRight(AbstractContainerMenu handler) {
         if (handler instanceof BlockIronFurnaceScreenHandlerBase) {
             BlockPos pos = ((BlockIronFurnaceScreenHandlerBase) handler).getPos();
-            World world = ((BlockIronFurnaceScreenHandlerBase) handler).getWorld();
+            Level world = ((BlockIronFurnaceScreenHandlerBase) handler).getLevel();
             return pos != null ? Optional.of(((BlockIronFurnaceTileBase) world.getBlockEntity(pos)).getSettingRight()) : Optional.empty();
         } else {
             return Optional.empty();
         }
     }
 
-    private static Optional<Integer> getIndexFront(ScreenHandler handler) {
+    private static Optional<Integer> getIndexFront(AbstractContainerMenu handler) {
         if (handler instanceof BlockIronFurnaceScreenHandlerBase) {
             BlockPos pos = ((BlockIronFurnaceScreenHandlerBase) handler).getPos();
-            World world = ((BlockIronFurnaceScreenHandlerBase) handler).getWorld();
+            Level world = ((BlockIronFurnaceScreenHandlerBase) handler).getLevel();
             return pos != null ? Optional.of(((BlockIronFurnaceTileBase) world.getBlockEntity(pos)).getIndexFront()) : Optional.empty();
         } else {
             return Optional.empty();
         }
     }
 
-    private static Optional<Integer> getIndexBack(ScreenHandler handler) {
+    private static Optional<Integer> getIndexBack(AbstractContainerMenu handler) {
         if (handler instanceof BlockIronFurnaceScreenHandlerBase) {
             BlockPos pos = ((BlockIronFurnaceScreenHandlerBase) handler).getPos();
-            World world = ((BlockIronFurnaceScreenHandlerBase) handler).getWorld();
+            Level world = ((BlockIronFurnaceScreenHandlerBase) handler).getLevel();
             return pos != null ? Optional.of(((BlockIronFurnaceTileBase) world.getBlockEntity(pos)).getIndexBack()) : Optional.empty();
         } else {
             return Optional.empty();
         }
     }
 
-    private static Optional<Integer> getIndexLeft(ScreenHandler handler) {
+    private static Optional<Integer> getIndexLeft(AbstractContainerMenu handler) {
         if (handler instanceof BlockIronFurnaceScreenHandlerBase) {
             BlockPos pos = ((BlockIronFurnaceScreenHandlerBase) handler).getPos();
-            World world = ((BlockIronFurnaceScreenHandlerBase) handler).getWorld();
+            Level world = ((BlockIronFurnaceScreenHandlerBase) handler).getLevel();
             return pos != null ? Optional.of(((BlockIronFurnaceTileBase) world.getBlockEntity(pos)).getIndexLeft()) : Optional.empty();
         } else {
             return Optional.empty();
         }
     }
 
-    private static Optional<Integer> getIndexRight(ScreenHandler handler) {
+    private static Optional<Integer> getIndexRight(AbstractContainerMenu handler) {
         if (handler instanceof BlockIronFurnaceScreenHandlerBase) {
             BlockPos pos = ((BlockIronFurnaceScreenHandlerBase) handler).getPos();
-            World world = ((BlockIronFurnaceScreenHandlerBase) handler).getWorld();
+            Level world = ((BlockIronFurnaceScreenHandlerBase) handler).getLevel();
             return pos != null ? Optional.of(((BlockIronFurnaceTileBase) world.getBlockEntity(pos)).getIndexRight()) : Optional.empty();
         } else {
             return Optional.empty();
         }
     }
 
-    private static Optional<BlockPos> getBlockPos(ScreenHandler handler) {
+    private static Optional<BlockPos> getBlockPos(AbstractContainerMenu handler) {
         if (handler instanceof BlockIronFurnaceScreenHandlerBase) {
             BlockPos pos = ((BlockIronFurnaceScreenHandlerBase) handler).getPos();
-            World world = ((BlockIronFurnaceScreenHandlerBase) handler).getWorld();
+            Level world = ((BlockIronFurnaceScreenHandlerBase) handler).getLevel();
             return pos != null ? Optional.of(((BlockIronFurnaceTileBase) world.getBlockEntity(pos)).getPos()) : Optional.empty();
         } else {
             return Optional.empty();
         }
     }
 
-    private void addTooltips(MatrixStack matrix, int mouseX, int mouseY) {
+    private void addTooltips(GuiGraphics guiGraphics, int mouseX, int mouseY) {
 
         if (!showInventoryButtons(handler).get()) {
             if (mouseX >= -20 && mouseX <= 0 && mouseY >= 4 && mouseY <= 26) {
-                this.renderTooltip(matrix, new TranslatableText("tooltip." + Reference.MOD_ID + ".gui_open"), mouseX, mouseY);
+                guiGraphics.renderTooltip(this.font, Component.translatable("tooltip." + Reference.MOD_ID + ".gui_open"), mouseX, mouseY);
             }
         } else {
             if (mouseX >= -13 && mouseX <= 0 && mouseY >= 4 && mouseY <= 26) {
-                this.renderTooltip(matrix, StringHelper.getShiftInfoGui(), mouseX, mouseY);
+                guiGraphics.renderTooltip(this.font, StringHelper.getShiftInfoGui(), mouseX, mouseY);
             } else if (mouseX >= -47 && mouseX <= -34 && mouseY >= 12 && mouseY <= 25) {
-                List<Text> list = Lists.newArrayList();
-                list.add(new TranslatableText("tooltip." + Reference.MOD_ID + ".gui_auto_input"));
-                list.add(new LiteralText("" + getAutoInput(handler).get()));
-                this.renderTooltip(matrix, list, mouseX, mouseY);
+                List<Component> list = Lists.newArrayList();
+                list.add(Component.translatable("tooltip." + Reference.MOD_ID + ".gui_auto_input"));
+                list.add(Component.literal("" + getAutoInput(handler).get()));
+                guiGraphics.renderComponentTooltip(this.font, list, mouseX, mouseY);
             } else if (mouseX >= -29 && mouseX <= -16 && mouseY >= 12 && mouseY <= 25) {
-                List<Text> list = Lists.newArrayList();
-                list.add(new TranslatableText("tooltip." + Reference.MOD_ID + ".gui_auto_output"));
-                list.add(new LiteralText("" + getAutoOutput(handler).get()));
-                this.renderTooltip(matrix, list, mouseX, mouseY);
+                List<Component> list = Lists.newArrayList();
+                list.add(Component.translatable("tooltip." + Reference.MOD_ID + ".gui_auto_output"));
+                list.add(Component.literal("" + getAutoOutput(handler).get()));
+                guiGraphics.renderComponentTooltip(this.font, list, mouseX, mouseY);
             } else if (mouseX >= -32 && mouseX <= -23 && mouseY >= 31 && mouseY <= 40) {
-                List<Text> list = Lists.newArrayList();
-                list.add(new TranslatableText("tooltip." + Reference.MOD_ID + ".gui_top"));
+                List<Component> list = Lists.newArrayList();
+                list.add(Component.translatable("tooltip." + Reference.MOD_ID + ".gui_top"));
                 list.add(getTooltip(handler, 1).get());
-                this.renderTooltip(matrix, list, mouseX, mouseY);
+                guiGraphics.renderComponentTooltip(this.font, list, mouseX, mouseY);
             } else if (mouseX >= -32 && mouseX <= -23 && mouseY >= 55 && mouseY <= 64) {
-                List<Text> list = Lists.newArrayList();
-                list.add(new TranslatableText("tooltip." + Reference.MOD_ID + ".gui_bottom"));
+                List<Component> list = Lists.newArrayList();
+                list.add(Component.translatable("tooltip." + Reference.MOD_ID + ".gui_bottom"));
                 list.add(getTooltip(handler, 0).get());
-                this.renderTooltip(matrix, list, mouseX, mouseY);
+                guiGraphics.renderComponentTooltip(this.font, list, mouseX, mouseY);
             } else if (mouseX >= -32 && mouseX <= -23 && mouseY >= 43 && mouseY <= 52) {
-                List<Text> list = Lists.newArrayList();
+                List<Component> list = Lists.newArrayList();
                 if (IronFurnacesClient.isShiftKeyDown()) {
-                    list.add(new TranslatableText("tooltip." + Reference.MOD_ID + ".gui_reset"));
+                    list.add(Component.translatable("tooltip." + Reference.MOD_ID + ".gui_reset"));
                 } else {
-                    list.add(new TranslatableText("tooltip." + Reference.MOD_ID + ".gui_front"));
+                    list.add(Component.translatable("tooltip." + Reference.MOD_ID + ".gui_front"));
                     list.add(getTooltip(handler, getIndexFront(handler).get()).get());
                 }
-                this.renderTooltip(matrix, list, mouseX, mouseY);
+                guiGraphics.renderComponentTooltip(this.font, list, mouseX, mouseY);
             } else if (mouseX >= -44 && mouseX <= -35 && mouseY >= 43 && mouseY <= 52) {
-                List<Text> list = Lists.newArrayList();
-                list.add(new TranslatableText("tooltip." + Reference.MOD_ID + ".gui_left"));
+                List<Component> list = Lists.newArrayList();
+                list.add(Component.translatable("tooltip." + Reference.MOD_ID + ".gui_left"));
                 list.add(getTooltip(handler, getIndexLeft(handler).get()).get());
-                this.renderTooltip(matrix, list, mouseX, mouseY);
+                guiGraphics.renderComponentTooltip(this.font, list, mouseX, mouseY);
             } else if (mouseX >= -20 && mouseX <= -11 && mouseY >= 43 && mouseY <= 52) {
-                List<Text> list = Lists.newArrayList();
-                list.add(new TranslatableText("tooltip." + Reference.MOD_ID + ".gui_right"));
+                List<Component> list = Lists.newArrayList();
+                list.add(Component.translatable("tooltip." + Reference.MOD_ID + ".gui_right"));
                 list.add(getTooltip(handler, getIndexRight(handler).get()).get());
-                this.renderTooltip(matrix, list, mouseX, mouseY);
+                guiGraphics.renderComponentTooltip(this.font, list, mouseX, mouseY);
             } else if (mouseX >= -20 && mouseX <= -11 && mouseY >= 55 && mouseY <= 64) {
-                List<Text> list = Lists.newArrayList();
-                list.add(new TranslatableText("tooltip." + Reference.MOD_ID + ".gui_back"));
+                List<Component> list = Lists.newArrayList();
+                list.add(Component.translatable("tooltip." + Reference.MOD_ID + ".gui_back"));
                 list.add(getTooltip(handler, getIndexBack(handler).get()).get());
-                this.renderTooltip(matrix, list, mouseX, mouseY);
+                guiGraphics.renderComponentTooltip(this.font, list, mouseX, mouseY);
             } else if (mouseX >= -47 && mouseX <= -34 && mouseY >= 70 && mouseY <= 83) {
-                List<Text> list = Lists.newArrayList();
-                list.add(new TranslatableText("tooltip." + Reference.MOD_ID + ".gui_redstone_ignored"));
-                this.renderTooltip(matrix, list, mouseX, mouseY);
+                List<Component> list = Lists.newArrayList();
+                list.add(Component.translatable("tooltip." + Reference.MOD_ID + ".gui_redstone_ignored"));
+                guiGraphics.renderComponentTooltip(this.font, list, mouseX, mouseY);
             } else if (mouseX >= -31 && mouseX <= -18 && mouseY >= 70 && mouseY <= 83) {
-                List<Text> list = Lists.newArrayList();
+                List<Component> list = Lists.newArrayList();
                 if (IronFurnacesClient.isShiftKeyDown()) {
-                    list.add(new TranslatableText("tooltip." + Reference.MOD_ID + ".gui_redstone_low"));
+                    list.add(Component.translatable("tooltip." + Reference.MOD_ID + ".gui_redstone_low"));
                 } else {
-                    list.add(new TranslatableText("tooltip." + Reference.MOD_ID + ".gui_redstone_high"));
+                    list.add(Component.translatable("tooltip." + Reference.MOD_ID + ".gui_redstone_high"));
                 }
-                this.renderTooltip(matrix, list, mouseX, mouseY);
+                guiGraphics.renderComponentTooltip(this.font, list, mouseX, mouseY);
             } else if (mouseX >= -15 && mouseX <= -2 && mouseY >= 70 && mouseY <= 83) {
-                List<Text> list = Lists.newArrayList();
-                list.add(new TranslatableText("tooltip." + Reference.MOD_ID + ".gui_redstone_comparator"));
-                this.renderTooltip(matrix, list, mouseX, mouseY);
+                List<Component> list = Lists.newArrayList();
+                list.add(Component.translatable("tooltip." + Reference.MOD_ID + ".gui_redstone_comparator"));
+                guiGraphics.renderComponentTooltip(this.font, list, mouseX, mouseY);
             } else if (mouseX >= -47 && mouseX <= -34 && mouseY >= 86 && mouseY <= 99) {
-                List<Text> list = Lists.newArrayList();
-                list.add(new TranslatableText("tooltip." + Reference.MOD_ID + ".gui_redstone_comparator_sub"));
-                this.renderTooltip(matrix, list, mouseX, mouseY);
+                List<Component> list = Lists.newArrayList();
+                list.add(Component.translatable("tooltip." + Reference.MOD_ID + ".gui_redstone_comparator_sub"));
+                guiGraphics.renderComponentTooltip(this.font, list, mouseX, mouseY);
             }
 
         }
     }
 
     @Override
-    protected void drawBackground(MatrixStack matrices, float delta, int mouseX, int mouseY) {
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+    protected void renderBg(GuiGraphics guiGraphics, float delta, int mouseX, int mouseY) {
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        RenderSystem.setShaderTexture(0, this.GUI);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        int i = (this.width - this.backgroundWidth) / 2;
-        int j = (this.height - this.backgroundHeight) / 2;
-        this.drawTexture(matrices, i, j, 0, 0, this.backgroundWidth, this.backgroundHeight);
+        int i = (this.width - this.imageWidth) / 2;
+        int j = (this.height - this.imageHeight) / 2;
+        guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.GUI, i, j, 0, 0, this.imageWidth, this.imageHeight, 256, 256);
         int k;
         if (((BlockIronFurnaceScreenHandlerBase)this.handler).isBurning()) {
             k = ((BlockIronFurnaceScreenHandlerBase)this.handler).getFuelProgress();
-            this.drawTexture(matrices, i + 56, j + 36 + 12 - k, 176, 12 - k, 14, k + 1);
+            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.GUI, i + 56, j + 36 + 12 - k, 176, 12 - k, 14, k + 1, 256, 256);
         }
 
         k = ((BlockIronFurnaceScreenHandlerBase)this.handler).getCookProgress();
-        this.drawTexture(matrices, i + 79, j + 34, 176, 14, k + 1, 16);
+        guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.GUI, i + 79, j + 34, 176, 14, k + 1, 16, 256, 256);
 
-        RenderSystem.setShaderTexture(0, this.WIDGETS);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        int actualMouseX = mouseX - ((this.width - this.xSize) / 2);
-        int actualMouseY = mouseY - ((this.height - this.ySize) / 2);
+        int actualMouseX = mouseX - ((this.width - this.imageWidth) / 2);
+        int actualMouseY = mouseY - ((this.height - this.imageHeight) / 2);
 
-        this.addInventoryButtons(matrices, ((BlockIronFurnaceScreenHandlerBase) this.handler), actualMouseX, actualMouseY);
-        this.addRedstoneButtons(matrices, ((BlockIronFurnaceScreenHandlerBase) this.handler), actualMouseX, actualMouseY);
+        this.addInventoryButtons(guiGraphics, ((BlockIronFurnaceScreenHandlerBase) this.handler), actualMouseX, actualMouseY);
+        this.addRedstoneButtons(guiGraphics, ((BlockIronFurnaceScreenHandlerBase) this.handler), actualMouseX, actualMouseY);
 
     }
 
-    private void addRedstoneButtons(MatrixStack matrix, BlockIronFurnaceScreenHandlerBase handler, int mouseX, int mouseY) {
-        int guiLeft = (this.width - this.backgroundWidth) / 2;
-        int guiTop = (this.height - this.backgroundHeight) / 2;
+    private void addRedstoneButtons(GuiGraphics guiGraphics, BlockIronFurnaceScreenHandlerBase handler, int mouseX, int mouseY) {
+        int guiLeft = (this.width - this.imageWidth) / 2;
+        int guiTop = (this.height - this.imageHeight) / 2;
         if (showInventoryButtons(handler).get()) {
-            this.blitRedstone(matrix);
+            this.blitRedstone(guiGraphics);
             if (getRedstoneMode(handler).get() == 4) {
                 int comSub = getComSub(handler).get();
                 boolean flag = IronFurnacesClient.isShiftKeyDown();
@@ -382,26 +378,26 @@ public abstract class BlockIronFurnaceScreenBase<T extends BlockIronFurnaceScree
                     if (comSub > 0) {
                         this.sub_button = true;
                         if (mouseX >= -31 && mouseX <= -18 && mouseY >= 86 && mouseY <= 99) {
-                            this.drawTexture(matrix, guiLeft - 31, guiTop + 86, 14, 0, 14, 14);
+                            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 31, guiTop + 86, 14, 0, 14, 14, 256, 256);
                         } else {
-                            this.drawTexture(matrix, guiLeft - 31, guiTop + 86, 0, 0, 14, 14);
+                            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 31, guiTop + 86, 0, 0, 14, 14, 256, 256);
                         }
                     } else {
                         this.sub_button = false;
-                        this.drawTexture(matrix, guiLeft - 31, guiTop + 86, 28, 0, 14, 14);
+                        guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 31, guiTop + 86, 28, 0, 14, 14, 256, 256);
                     }
 
                 } else {
                     if (comSub < 15) {
                         this.add_button = true;
                         if (mouseX >= -31 && mouseX <= -18 && mouseY >= 86 && mouseY <= 99) {
-                            this.drawTexture(matrix, guiLeft - 31, guiTop + 86, 14, 14, 14, 14);
+                            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 31, guiTop + 86, 14, 14, 14, 14, 256, 256);
                         } else {
-                            this.drawTexture(matrix, guiLeft - 31, guiTop + 86, 0, 14, 14, 14);
+                            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 31, guiTop + 86, 0, 14, 14, 14, 256, 256);
                         }
                     } else {
                         this.add_button = false;
-                        this.drawTexture(matrix, guiLeft - 31, guiTop + 86, 28, 14, 14, 14);
+                        guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 31, guiTop + 86, 28, 14, 14, 14, 256, 256);
 
                     }
                 }
@@ -409,116 +405,116 @@ public abstract class BlockIronFurnaceScreenBase<T extends BlockIronFurnaceScree
         }
     }
 
-    private void addInventoryButtons(MatrixStack matrix, BlockIronFurnaceScreenHandlerBase container, int mouseX, int mouseY) {
-        int guiLeft = (this.width - this.backgroundWidth) / 2;
-        int guiTop = (this.height - this.backgroundHeight) / 2;
+    private void addInventoryButtons(GuiGraphics guiGraphics, BlockIronFurnaceScreenHandlerBase container, int mouseX, int mouseY) {
+        int guiLeft = (this.width - this.imageWidth) / 2;
+        int guiTop = (this.height - this.imageHeight) / 2;
         if (!showInventoryButtons(container).get()) {
-            this.drawTexture(matrix, guiLeft - 20, guiTop + 4, 0, 28, 23, 26);
+            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 20, guiTop + 4, 0, 28, 23, 26, 256, 256);
         } else if (showInventoryButtons(container).get()) {
-            this.drawTexture(matrix, guiLeft - 56, guiTop + 4, 0, 54, 59, 107);
+            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 56, guiTop + 4, 0, 54, 59, 107, 256, 256);
             if (mouseX >= -47 && mouseX <= -34 && mouseY >= 12 && mouseY <= 25 || getAutoInput(container).get()) {
-                this.drawTexture(matrix, guiLeft - 47, guiTop + 12, 0, 189, 14, 14);
+                guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 47, guiTop + 12, 0, 189, 14, 14, 256, 256);
             }
             if (mouseX >= -29 && mouseX <= -16 && mouseY >= 12 && mouseY <= 25 || getAutoOutput(container).get()) {
-                this.drawTexture(matrix, guiLeft - 29, guiTop + 12, 14, 189, 14, 14);
+                guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 29, guiTop + 12, 14, 189, 14, 14, 256, 256);
             }
-            this.blitIO(matrix);
+            this.blitIO(guiGraphics);
         }
 
 
     }
 
-    private void blitRedstone(MatrixStack matrix) {
-        int guiLeft = (this.width - this.backgroundWidth) / 2;
-        int guiTop = (this.height - this.backgroundHeight) / 2;
+    private void blitRedstone(GuiGraphics guiGraphics) {
+        int guiLeft = (this.width - this.imageWidth) / 2;
+        int guiTop = (this.height - this.imageHeight) / 2;
         boolean flag = IronFurnacesClient.isShiftKeyDown();
         if (flag) {
-            this.drawTexture(matrix, guiLeft - 31, guiTop + 70, 84, 189, 14, 14);
+            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 31, guiTop + 70, 84, 189, 14, 14, 256, 256);
         }
         int setting = getRedstoneMode(handler).get();
         if (setting == 0) {
-            this.drawTexture(matrix, guiLeft - 47, guiTop + 70, 28, 189, 14, 14);
+            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 47, guiTop + 70, 28, 189, 14, 14, 256, 256);
         } else if (setting == 1 && !flag) {
-            this.drawTexture(matrix, guiLeft - 31, guiTop + 70, 42, 189, 14, 14);
+            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 31, guiTop + 70, 42, 189, 14, 14, 256, 256);
         } else if (setting == 2) {
-            this.drawTexture(matrix, guiLeft - 31, guiTop + 70, 98, 189, 14, 14);
+            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 31, guiTop + 70, 98, 189, 14, 14, 256, 256);
         } else if (setting == 3) {
-            this.drawTexture(matrix, guiLeft - 15, guiTop + 70, 56, 189, 14, 14);
+            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 15, guiTop + 70, 56, 189, 14, 14, 256, 256);
         } else if (setting == 4) {
-            this.drawTexture(matrix, guiLeft - 47, guiTop + 86, 70, 189, 14, 14);
+            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 47, guiTop + 86, 70, 189, 14, 14, 256, 256);
         }
 
     }
 
-    private void blitIO(MatrixStack matrix) {
-        int guiLeft = (this.width - this.backgroundWidth) / 2;
-        int guiTop = (this.height - this.backgroundHeight) / 2;
+    private void blitIO(GuiGraphics guiGraphics) {
+        int guiLeft = (this.width - this.imageWidth) / 2;
+        int guiTop = (this.height - this.imageHeight) / 2;
         int[] settings = new int[]{0, 0, 0, 0, 0, 0};
         int setting = getSettingTop(handler).get();
         if (setting == 1) {
-            this.drawTexture(matrix, guiLeft - 32, guiTop + 31, 0, 161, 10, 10);
+            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 32, guiTop + 31, 0, 161, 10, 10, 256, 256);
         } else if (setting == 2) {
-            this.drawTexture(matrix, guiLeft - 32, guiTop + 31, 10, 161, 10, 10);
+            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 32, guiTop + 31, 10, 161, 10, 10, 256, 256);
         } else if (setting == 3) {
-            this.drawTexture(matrix, guiLeft - 32, guiTop + 31, 20, 161, 10, 10);
+            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 32, guiTop + 31, 20, 161, 10, 10, 256, 256);
         } else if (setting == 4) {
-            this.drawTexture(matrix, guiLeft - 32, guiTop + 31, 30, 161, 10, 10);
+            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 32, guiTop + 31, 30, 161, 10, 10, 256, 256);
         }
         settings[1] = setting;
 
         setting = getSettingBottom(handler).get();
         if (setting == 1) {
-            this.drawTexture(matrix, guiLeft - 32, guiTop + 55, 0, 161, 10, 10);
+            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 32, guiTop + 55, 0, 161, 10, 10, 256, 256);
         } else if (setting == 2) {
-            this.drawTexture(matrix, guiLeft - 32, guiTop + 55, 10, 161, 10, 10);
+            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 32, guiTop + 55, 10, 161, 10, 10, 256, 256);
         } else if (setting == 3) {
-            this.drawTexture(matrix, guiLeft - 32, guiTop + 55, 20, 161, 10, 10);
+            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 32, guiTop + 55, 20, 161, 10, 10, 256, 256);
         } else if (setting == 4) {
-            this.drawTexture(matrix, guiLeft - 32, guiTop + 55, 30, 161, 10, 10);
+            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 32, guiTop + 55, 30, 161, 10, 10, 256, 256);
         }
         settings[0] = setting;
         setting = getSettingFront(handler).get();
         if (setting == 1) {
-            this.drawTexture(matrix, guiLeft - 32, guiTop + 43, 0, 161, 10, 10);
+            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 32, guiTop + 43, 0, 161, 10, 10, 256, 256);
         } else if (setting == 2) {
-            this.drawTexture(matrix, guiLeft - 32, guiTop + 43, 10, 161, 10, 10);
+            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 32, guiTop + 43, 10, 161, 10, 10, 256, 256);
         } else if (setting == 3) {
-            this.drawTexture(matrix, guiLeft - 32, guiTop + 43, 20, 161, 10, 10);
+            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 32, guiTop + 43, 20, 161, 10, 10, 256, 256);
         } else if (setting == 4) {
-            this.drawTexture(matrix, guiLeft - 32, guiTop + 43, 30, 161, 10, 10);
+            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 32, guiTop + 43, 30, 161, 10, 10, 256, 256);
         }
         settings[getIndexFront(handler).get()] = setting;
         setting = getSettingBack(handler).get();
         if (setting == 1) {
-            this.drawTexture(matrix, guiLeft - 20, guiTop + 55, 0, 161, 10, 10);
+            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 20, guiTop + 55, 0, 161, 10, 10, 256, 256);
         } else if (setting == 2) {
-            this.drawTexture(matrix, guiLeft - 20, guiTop + 55, 10, 161, 10, 10);
+            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 20, guiTop + 55, 10, 161, 10, 10, 256, 256);
         } else if (setting == 3) {
-            this.drawTexture(matrix, guiLeft - 20, guiTop + 55, 20, 161, 10, 10);
+            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 20, guiTop + 55, 20, 161, 10, 10, 256, 256);
         } else if (setting == 4) {
-            this.drawTexture(matrix, guiLeft - 20, guiTop + 55, 30, 161, 10, 10);
+            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 20, guiTop + 55, 30, 161, 10, 10, 256, 256);
         }
         settings[getIndexBack(handler).get()] = setting;
         setting = getSettingLeft(handler).get();
         if (setting == 1) {
-            this.drawTexture(matrix, guiLeft - 44, guiTop + 43, 0, 161, 10, 10);
+            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 44, guiTop + 43, 0, 161, 10, 10, 256, 256);
         } else if (setting == 2) {
-            this.drawTexture(matrix, guiLeft - 44, guiTop + 43, 10, 161, 10, 10);
+            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 44, guiTop + 43, 10, 161, 10, 10, 256, 256);
         } else if (setting == 3) {
-            this.drawTexture(matrix, guiLeft - 44, guiTop + 43, 20, 161, 10, 10);
+            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 44, guiTop + 43, 20, 161, 10, 10, 256, 256);
         } else if (setting == 4) {
-            this.drawTexture(matrix, guiLeft - 44, guiTop + 43, 30, 161, 10, 10);
+            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 44, guiTop + 43, 30, 161, 10, 10, 256, 256);
         }
         settings[getIndexLeft(handler).get()] = setting;
         setting = getSettingRight(handler).get();
         if (setting == 1) {
-            this.drawTexture(matrix, guiLeft - 20, guiTop + 43, 0, 161, 10, 10);
+            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 20, guiTop + 43, 0, 161, 10, 10, 256, 256);
         } else if (setting == 2) {
-            this.drawTexture(matrix, guiLeft - 20, guiTop + 43, 10, 161, 10, 10);
+            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 20, guiTop + 43, 10, 161, 10, 10, 256, 256);
         } else if (setting == 3) {
-            this.drawTexture(matrix, guiLeft - 20, guiTop + 43, 20, 161, 10, 10);
+            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 20, guiTop + 43, 20, 161, 10, 10, 256, 256);
         } else if (setting == 4) {
-            this.drawTexture(matrix, guiLeft - 20, guiTop + 43, 30, 161, 10, 10);
+            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 20, guiTop + 43, 30, 161, 10, 10, 256, 256);
         }
         settings[getIndexRight(handler).get()] = setting;
         boolean input = false;
@@ -537,20 +533,20 @@ public abstract class BlockIronFurnaceScreenBase<T extends BlockIronFurnaceScree
             }
         }
         if (input || both) {
-            this.drawTexture(matrix, guiLeft + 55, guiTop + 16, 0, 171, 18, 18);
+            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft + 55, guiTop + 16, 0, 171, 18, 18, 256, 256);
         }
         if (output || both) {
-            this.drawTexture(matrix, guiLeft + 111, guiTop + 30, 0, 203, 26, 26);
+            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft + 111, guiTop + 30, 0, 203, 26, 26, 256, 256);
         }
         if (fuel) {
-            this.drawTexture(matrix, guiLeft + 55, guiTop + 52, 18, 171, 18, 18);
+            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft + 55, guiTop + 52, 18, 171, 18, 18, 256, 256);
         }
     }
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        double actualMouseX = mouseX - ((this.width - this.xSize) / 2);
-        double actualMouseY = mouseY - ((this.height - this.ySize) / 2);
+        double actualMouseX = mouseX - ((this.width - this.imageWidth) / 2);
+        double actualMouseY = mouseY - ((this.height - this.imageHeight) / 2);
         this.mouseClickedRedstoneButtons(actualMouseX, actualMouseY);
         this.mouseClickedInventoryButtons(button, this.handler, actualMouseX, actualMouseY);
         return super.mouseClicked(mouseX, mouseY, button);
@@ -558,8 +554,8 @@ public abstract class BlockIronFurnaceScreenBase<T extends BlockIronFurnaceScree
 
     public void sendServer(int index, int value)
     {
-        PacketByteBuf buf = PacketByteBufs.create();
         BlockPos pos = getBlockPos(handler).get();
+        net.minecraft.network.FriendlyByteBuf buf = new net.minecraft.network.FriendlyByteBuf(io.netty.buffer.Unpooled.buffer());
         buf.writeInt(pos.getX());
         buf.writeInt(pos.getY());
         buf.writeInt(pos.getZ());
@@ -581,19 +577,19 @@ public abstract class BlockIronFurnaceScreenBase<T extends BlockIronFurnaceScree
             } else if (mouseX >= -47 && mouseX <= -34 && mouseY >= 12 && mouseY <= 25) {
                 if (!getAutoInput(container).get()) {
                     sendServer(6, 1);
-                    MinecraftClient.getInstance().getSoundManager().play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 0.6F, 0.3F));
+                    Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 0.6F, 0.3F));
                 } else {
                     sendServer(6, 0);
-                    MinecraftClient.getInstance().getSoundManager().play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 0.6F, 0.3F));
+                    Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 0.6F, 0.3F));
                 }
 
             } else if (mouseX >= -29 && mouseX <= -16 && mouseY >= 12 && mouseY <= 25) {
                 if (!getAutoOutput(container).get()) {
                     sendServer(7, 1);
-                    MinecraftClient.getInstance().getSoundManager().play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 0.6F, 0.3F));
+                    Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 0.6F, 0.3F));
                 } else {
                     sendServer(7, 0);
-                    MinecraftClient.getInstance().getSoundManager().play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 0.6F, 0.3F));
+                    Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 0.6F, 0.3F));
                 }
             } else if (mouseX >= -32 && mouseX <= -23 && mouseY >= 31 && mouseY <= 40) {
                 if (flag) {
@@ -615,7 +611,7 @@ public abstract class BlockIronFurnaceScreenBase<T extends BlockIronFurnaceScree
                     sendServer(3, 0);
                     sendServer(4, 0);
                     sendServer(5, 0);
-                    MinecraftClient.getInstance().getSoundManager().play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 0.8F, 0.3F));
+                    Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 0.8F, 0.3F));
                 } else {
                     if (flag) {
                         sendToServerInverted(getSettingFront(container).get(), getIndexFront(container).get());
@@ -646,7 +642,7 @@ public abstract class BlockIronFurnaceScreenBase<T extends BlockIronFurnaceScree
     }
 
     private void sendToServer(int setting, int index) {
-        MinecraftClient.getInstance().getSoundManager().play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 0.6F, 0.3F));
+        Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 0.6F, 0.3F));
         if (setting <= 0) {
             sendServer(index, 1);
         } else if (setting == 1) {
@@ -661,7 +657,7 @@ public abstract class BlockIronFurnaceScreenBase<T extends BlockIronFurnaceScree
     }
 
     private void sendToServerInverted(int setting, int index) {
-        MinecraftClient.getInstance().getSoundManager().play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 0.3F, 0.3F));
+        Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 0.3F, 0.3F));
         if (setting <= 0) {
             sendServer(index, 4);
         } else if (setting == 1) {
@@ -679,44 +675,44 @@ public abstract class BlockIronFurnaceScreenBase<T extends BlockIronFurnaceScree
         if (mouseX >= -31 && mouseX <= -18 && mouseY >= 86 && mouseY <= 99) {
             if (this.sub_button && IronFurnacesClient.isShiftKeyDown()) {
                 sendServer(9, getComSub(handler).get() - 1);
-                MinecraftClient.getInstance().getSoundManager().play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 0.3F, 0.3F));
+                Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 0.3F, 0.3F));
             }
         }
         if (mouseX >= -31 && mouseX <= -18 && mouseY >= 86 && mouseY <= 99) {
             if (this.add_button && !IronFurnacesClient.isShiftKeyDown()) {
                 sendServer(9, getComSub(handler).get() + 1);
-                MinecraftClient.getInstance().getSoundManager().play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 0.6F, 0.3F));
+                Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 0.6F, 0.3F));
             }
         }
         if (mouseX >= -47 && mouseX <= -34 && mouseY >= 70 && mouseY <= 83) {
             if (getRedstoneMode(handler).get() != 0) {
                 sendServer(8, 0);
-                MinecraftClient.getInstance().getSoundManager().play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 0.6F, 0.3F));
+                Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 0.6F, 0.3F));
             }
         }
 
         if (mouseX >= -31 && mouseX <= -18 && mouseY >= 70 && mouseY <= 83) {
             if (getRedstoneMode(handler).get() != 1 && !IronFurnacesClient.isShiftKeyDown()) {
                 sendServer(8, 1);
-                MinecraftClient.getInstance().getSoundManager().play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 0.6F, 0.3F));
+                Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 0.6F, 0.3F));
             }
             if (getRedstoneMode(handler).get() != 2 && IronFurnacesClient.isShiftKeyDown()) {
                 sendServer(8, 2);
-                MinecraftClient.getInstance().getSoundManager().play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 0.6F, 0.3F));
+                Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 0.6F, 0.3F));
             }
         }
 
         if (mouseX >= -15 && mouseX <= -2 && mouseY >= 70 && mouseY <= 83) {
             if (getRedstoneMode(handler).get() != 3) {
                 sendServer(8, 3);
-                MinecraftClient.getInstance().getSoundManager().play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 0.6F, 0.3F));
+                Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 0.6F, 0.3F));
             }
         }
 
         if (mouseX >= -47 && mouseX <= -34 && mouseY >= 86 && mouseY <= 99) {
             if (getRedstoneMode(handler).get() != 4) {
                 sendServer(8, 4);
-                MinecraftClient.getInstance().getSoundManager().play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 0.6F, 0.3F));
+                Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 0.6F, 0.3F));
             }
         }
     }

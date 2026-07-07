@@ -4,18 +4,18 @@ import ironfurnaces.init.Reference;
 import ironfurnaces.tileentity.BlockIronFurnaceTileBase;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.client.item.TooltipContext;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUsageContext;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.entity.BlockEntity;
+
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.UseOnContext;
+
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 
 import java.util.List;
 
@@ -23,52 +23,55 @@ public class ItemFurnaceCopy extends Item {
 
 
     public ItemFurnaceCopy() {
-        super(new Item.Settings().group(Reference.itemGroup));
+        super(new Item.Properties());
     }
 
     @Environment(EnvType.CLIENT)
     @Override
-    public void appendTooltip(ItemStack stack, World world, List<Text> tooltip, TooltipContext context) {
-        if (stack.hasNbt()) {
-            tooltip.add(new LiteralText("Down: " + stack.getNbt().getIntArray("settings")[0]).setStyle(Style.EMPTY.withFormatting((Formatting.GRAY))));
-            tooltip.add(new LiteralText("Up: " + stack.getNbt().getIntArray("settings")[1]).setStyle(Style.EMPTY.withFormatting((Formatting.GRAY))));
-            tooltip.add(new LiteralText("North: " + stack.getNbt().getIntArray("settings")[2]).setStyle(Style.EMPTY.withFormatting((Formatting.GRAY))));
-            tooltip.add(new LiteralText("South: " + stack.getNbt().getIntArray("settings")[3]).setStyle(Style.EMPTY.withFormatting((Formatting.GRAY))));
-            tooltip.add(new LiteralText("West: " + stack.getNbt().getIntArray("settings")[4]).setStyle(Style.EMPTY.withFormatting((Formatting.GRAY))));
-            tooltip.add(new LiteralText("East: " + stack.getNbt().getIntArray("settings")[5]).setStyle(Style.EMPTY.withFormatting((Formatting.GRAY))));
-            tooltip.add(new LiteralText("Auto Input: " + stack.getNbt().getIntArray("settings")[6]).setStyle(Style.EMPTY.withFormatting((Formatting.GRAY))));
-            tooltip.add(new LiteralText("Auto Output: " + stack.getNbt().getIntArray("settings")[7]).setStyle(Style.EMPTY.withFormatting((Formatting.GRAY))));
-            tooltip.add(new LiteralText("Redstone Mode: " + stack.getNbt().getIntArray("settings")[8]).setStyle(Style.EMPTY.withFormatting((Formatting.GRAY))));
-            tooltip.add(new LiteralText("Redstone Value: " + stack.getNbt().getIntArray("settings")[9]).setStyle(Style.EMPTY.withFormatting((Formatting.GRAY))));
+    public void appendHoverText(ItemStack stack, Item.TooltipContext context, net.minecraft.world.item.component.TooltipDisplay display, java.util.function.Consumer<Component> tooltip, net.minecraft.world.item.TooltipFlag flag) {
+        net.minecraft.world.item.component.CustomData customData = stack.get(net.minecraft.core.component.DataComponents.CUSTOM_DATA);
+        if (customData != null) {
+            int[] settings = customData.copyTag().getIntArray("settings").orElse(new int[10]);
+            tooltip.accept(Component.literal("Down: " + settings[0]).withStyle(ChatFormatting.GRAY));
+            tooltip.accept(Component.literal("Up: " + settings[1]).withStyle(ChatFormatting.GRAY));
+            tooltip.accept(Component.literal("North: " + settings[2]).withStyle(ChatFormatting.GRAY));
+            tooltip.accept(Component.literal("South: " + settings[3]).withStyle(ChatFormatting.GRAY));
+            tooltip.accept(Component.literal("West: " + settings[4]).withStyle(ChatFormatting.GRAY));
+            tooltip.accept(Component.literal("East: " + settings[5]).withStyle(ChatFormatting.GRAY));
+            tooltip.accept(Component.literal("Auto Input: " + settings[6]).withStyle(ChatFormatting.GRAY));
+            tooltip.accept(Component.literal("Auto Output: " + settings[7]).withStyle(ChatFormatting.GRAY));
+            tooltip.accept(Component.literal("Redstone Mode: " + settings[8]).withStyle(ChatFormatting.GRAY));
+            tooltip.accept(Component.literal("Redstone Value: " + settings[9]).withStyle(ChatFormatting.GRAY));
         }
-        tooltip.add(new LiteralText("Right-click to copy settings"));
-        tooltip.add(new LiteralText("Sneak & right-click to apply settings"));
+        tooltip.accept(Component.literal("Right-click to copy settings"));
+        tooltip.accept(Component.literal("Sneak & right-click to apply settings"));
     }
 
     @Override
-    public ActionResult useOnBlock(ItemUsageContext ctx) {
-        World world = ctx.getWorld();
+    public InteractionResult useOnBlock(UseOnContext ctx) {
+        Level world = ctx.getLevel();
         BlockPos pos = ctx.getBlockPos();
         if (!ctx.getPlayer().isSneaking())
         {
             return super.useOnBlock(ctx);
         }
-        if (!world.isClient) {
+        if (!world.isClientSide()) {
             BlockEntity te = world.getBlockEntity(pos);
 
             if (!(te instanceof BlockIronFurnaceTileBase)) {
                 return super.useOnBlock(ctx);
             }
 
-            ItemStack stack = ctx.getStack();
-            if (stack.hasNbt())
+            ItemStack stack = ctx.getItem();
+            net.minecraft.world.item.component.CustomData customData = stack.get(net.minecraft.core.component.DataComponents.CUSTOM_DATA);
+            if (customData != null)
             {
-                int[] settings = stack.getNbt().getIntArray("settings");
+                int[] settings = customData.copyTag().getIntArray("settings").orElse(new int[10]);
                 for (int i = 0; i < settings.length; i++)
                     ((BlockIronFurnaceTileBase) te).furnaceSettings.set(i, settings[i]);
             }
-            world.updateListeners(pos, world.getBlockState(pos).getBlock().getDefaultState(), world.getBlockState(pos), 3);
-            ctx.getPlayer().sendMessage(new LiteralText("Settings applied"), true);
+            world.updateListeners(pos, world.getBlockState(pos).getBlock().defaultBlockState(), world.getBlockState(pos), 3);
+            ctx.getPlayer().sendMessage(Component.literal("Settings applied"), true);
         }
 
         return super.useOnBlock(ctx);

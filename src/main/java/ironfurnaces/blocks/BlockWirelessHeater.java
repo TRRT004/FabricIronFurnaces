@@ -1,52 +1,55 @@
 package ironfurnaces.blocks;
 
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import ironfurnaces.init.Reference;
 import ironfurnaces.tileentity.BlockIronFurnaceTileBase;
 import ironfurnaces.tileentity.BlockWirelessHeaterTile;
-import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
-import net.minecraft.block.*;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityTicker;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.NamedScreenHandlerFactory;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.ItemScatterer;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+
+import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.state.*;
+import net.minecraft.world.level.block.entity.*;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.Containers;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
-import team.reborn.energy.Energy;
+
 
 import java.util.Random;
 
-public class BlockWirelessHeater extends Block implements BlockEntityProvider {
+public class BlockWirelessHeater extends Block implements EntityBlock {
 
     public static final String HEATER = "block_heater";
 
     public BlockWirelessHeater() {
-        super(FabricBlockSettings.copyOf(Blocks.IRON_BLOCK));
+        super(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK));
     }
 
     @Override
-    public @Nullable BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
+    public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new BlockWirelessHeaterTile(pos, state);
     }
 
     @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level world, BlockState state, BlockEntityType<T> type) {
         return checkType(world, type, Reference.WIRELESS_HEATER_TILE);
     }
 
     @Nullable
-    protected static <T extends BlockEntity> BlockEntityTicker<T> checkType(World world, BlockEntityType<T> givenType, BlockEntityType<? extends BlockWirelessHeaterTile> expectedType) {
-        return world.isClient ? null : checkType(givenType, expectedType, BlockWirelessHeaterTile::tick);
+    protected static <T extends BlockEntity> BlockEntityTicker<T> checkType(Level world, BlockEntityType<T> givenType, BlockEntityType<? extends BlockWirelessHeaterTile> expectedType) {
+        return world.isClientSide() ? null : checkType(givenType, expectedType, BlockWirelessHeaterTile::tick);
     }
 
     @Nullable
@@ -55,78 +58,57 @@ public class BlockWirelessHeater extends Block implements BlockEntityProvider {
     }
 
     @Override
-    public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack itemStack) {
+    public void setPlacedBy(Level world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack itemStack) {
         BlockEntity blockEntity = world.getBlockEntity(pos);
         if (blockEntity instanceof BlockWirelessHeaterTile) {
-            if (itemStack.hasCustomName()) {
-                ((BlockWirelessHeaterTile)blockEntity).setCustomName(itemStack.getName());
+            if (itemStack.has(net.minecraft.core.component.DataComponents.CUSTOM_NAME)) {
+                ((BlockWirelessHeaterTile)blockEntity).setCustomName(itemStack.getHoverName());
             }
-            if (itemStack.hasNbt()) {
-                ((BlockWirelessHeaterTile)blockEntity).setStored(itemStack.getNbt().getInt("energy"));
+            net.minecraft.world.item.component.CustomData customData = itemStack.get(net.minecraft.core.component.DataComponents.CUSTOM_DATA);
+            if (customData != null) {
+                ((BlockWirelessHeaterTile)blockEntity).setStored(customData.copyTag().getInt("energy").orElse(0));
             }
         }
 
     }
 
     @Override
-    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
-        ItemStack stack = player.getActiveItem().copy();
-        if (world.isClient) {
-            return ActionResult.SUCCESS;
+    protected InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult hit) {
+        if (world.isClientSide()) {
+            return InteractionResult.SUCCESS;
         } else {
             this.openScreen(world, pos, player);
-            return ActionResult.CONSUME;
+            return InteractionResult.CONSUME;
         }
     }
 
-    protected void openScreen(World world, BlockPos pos, PlayerEntity player) {
+    protected void openScreen(Level world, BlockPos pos, Player player) {
         BlockEntity blockEntity = world.getBlockEntity(pos);
         if (blockEntity instanceof BlockWirelessHeaterTile) {
-            player.openHandledScreen((NamedScreenHandlerFactory)blockEntity);
+            player.openMenu((MenuProvider)blockEntity);
         }
 
     }
 
     @Override
-    public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
-        if (!state.isOf(newState.getBlock())) {
-            BlockEntity blockEntity = world.getBlockEntity(pos);
-            if (blockEntity instanceof BlockIronFurnaceTileBase) {
-                ItemScatterer.spawn(world, (BlockPos)pos, (Inventory)((BlockWirelessHeaterTile)blockEntity));
-                world.updateComparators(pos, this);
-            }
-        }
-        if (world.getBlockEntity(pos) != null && !state.isOf(newState.getBlock())) {
-            if (!world.isClient)
-            {
-                if (world.getBlockEntity(pos) != null)
-                {
-                    if (world.getBlockEntity(pos) instanceof BlockWirelessHeaterTile)
-                    {
-                        ItemStack stack = new ItemStack(Reference.WIRELESS_HEATER);
-                        stack.getOrCreateNbt().putInt("energy", (int)Energy.of(world.getBlockEntity(pos)).getEnergy());
-                        Random rand = new Random();
-                        world.spawnEntity(new ItemEntity(world, pos.getX() + rand.nextInt(1), pos.getY() + rand.nextInt(1), pos.getZ() + rand.nextInt(1), stack));
-                    }
-                }
-            }
-        }
-        super.onStateReplaced(state, world, pos, newState, moved);
+    protected void affectNeighborsAfterRemoval(BlockState state, net.minecraft.server.level.ServerLevel world, BlockPos pos, boolean moved) {
+        super.affectNeighborsAfterRemoval(state, world, pos, moved);
+        world.updateNeighborsAt(pos, this);
     }
 
     @Override
-    public boolean hasComparatorOutput(BlockState state) {
+    public boolean hasAnalogOutputSignal(BlockState state) {
         return true;
     }
 
     @Override
-    public int getComparatorOutput(BlockState state, World world, BlockPos pos) {
-        return ScreenHandler.calculateComparatorOutput(world.getBlockEntity(pos));
+    protected int getAnalogOutputSignal(BlockState state, Level world, BlockPos pos, net.minecraft.core.Direction direction) {
+        return AbstractContainerMenu.getRedstoneSignalFromBlockEntity(world.getBlockEntity(pos));
     }
 
     @Override
-    public BlockRenderType getRenderType(BlockState state) {
-        return BlockRenderType.MODEL;
+    public RenderShape getRenderShape(BlockState state) {
+        return RenderShape.MODEL;
     }
 
 }

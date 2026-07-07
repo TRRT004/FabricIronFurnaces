@@ -5,15 +5,15 @@ import ironfurnaces.init.Reference;
 import ironfurnaces.util.StringHelper;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.item.TooltipContext;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
-import net.minecraft.util.Formatting;
-import net.minecraft.world.World;
+
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.Component;
+
+import net.minecraft.ChatFormatting;
+import net.minecraft.world.level.Level;
 
 import java.util.List;
 
@@ -21,28 +21,29 @@ public class ItemHeater extends Item {
 
 
     public ItemHeater() {
-        super(new Settings().group(Reference.itemGroup));
+        super(new Item.Properties());
     }
 
     @Environment(EnvType.CLIENT)
     @Override
-    public void appendTooltip(ItemStack stack, World world, List<Text> tooltip, TooltipContext context) {
+    public void appendHoverText(ItemStack stack, Item.TooltipContext context, net.minecraft.world.item.component.TooltipDisplay display, java.util.function.Consumer<Component> tooltip, net.minecraft.world.item.TooltipFlag flag) {
         if (IronFurnacesClient.isShiftKeyDown())
         {
-            if (stack.hasNbt()) {
-                tooltip.add(new TranslatableText("tooltip." + Reference.MOD_ID + ".heater").setStyle(Style.EMPTY.withFormatting((Formatting.GRAY))));
-                tooltip.add(new TranslatableText("tooltip." + Reference.MOD_ID + ".heaterX").setStyle(Style.EMPTY.withFormatting((Formatting.GRAY))).append(new LiteralText("" + stack.getNbt().getInt("X")).setStyle(Style.EMPTY.withFormatting((Formatting.GRAY)))));
-                tooltip.add(new TranslatableText("tooltip." + Reference.MOD_ID + ".heaterY").setStyle(Style.EMPTY.withFormatting((Formatting.GRAY))).append(new LiteralText("" + stack.getNbt().getInt("Y")).setStyle(Style.EMPTY.withFormatting((Formatting.GRAY)))));
-                tooltip.add(new TranslatableText("tooltip." + Reference.MOD_ID + ".heaterZ").setStyle(Style.EMPTY.withFormatting((Formatting.GRAY))).append(new LiteralText("" + stack.getNbt().getInt("Z")).setStyle(Style.EMPTY.withFormatting((Formatting.GRAY)))));
+            if (stack.has(net.minecraft.core.component.DataComponents.CUSTOM_DATA)) {
+                net.minecraft.nbt.CompoundTag nbtTag = stack.get(net.minecraft.core.component.DataComponents.CUSTOM_DATA).copyTag();
+                tooltip.accept(Component.translatable("tooltip." + Reference.MOD_ID + ".heater").withStyle(ChatFormatting.GRAY));
+                tooltip.accept(Component.translatable("tooltip." + Reference.MOD_ID + ".heaterX").withStyle(ChatFormatting.GRAY).append(Component.literal("" + nbtTag.getInt("X").orElse(0)).withStyle(ChatFormatting.GRAY)));
+                tooltip.accept(Component.translatable("tooltip." + Reference.MOD_ID + ".heaterY").withStyle(ChatFormatting.GRAY).append(Component.literal("" + nbtTag.getInt("Y").orElse(0)).withStyle(ChatFormatting.GRAY)));
+                tooltip.accept(Component.translatable("tooltip." + Reference.MOD_ID + ".heaterZ").withStyle(ChatFormatting.GRAY).append(Component.literal("" + nbtTag.getInt("Z").orElse(0)).withStyle(ChatFormatting.GRAY)));
             } else {
-                tooltip.add(new TranslatableText("tooltip." + Reference.MOD_ID + ".heater_not_bound").setStyle(Style.EMPTY.withFormatting((Formatting.GRAY))));
-                tooltip.add(new TranslatableText("tooltip." + Reference.MOD_ID + ".heater_tip").setStyle(Style.EMPTY.withFormatting((Formatting.GRAY))));
-                tooltip.add(new TranslatableText("tooltip." + Reference.MOD_ID + ".heater_tip1").setStyle(Style.EMPTY.withFormatting((Formatting.GRAY))));
+                tooltip.accept(Component.translatable("tooltip." + Reference.MOD_ID + ".heater_not_bound").withStyle(ChatFormatting.GRAY));
+                tooltip.accept(Component.translatable("tooltip." + Reference.MOD_ID + ".heater_tip").withStyle(ChatFormatting.GRAY));
+                tooltip.accept(Component.translatable("tooltip." + Reference.MOD_ID + ".heater_tip1").withStyle(ChatFormatting.GRAY));
             }
         }
         else
         {
-            tooltip.add(StringHelper.getShiftInfoText());
+            tooltip.accept(StringHelper.getShiftInfoText());
         }
 
     }

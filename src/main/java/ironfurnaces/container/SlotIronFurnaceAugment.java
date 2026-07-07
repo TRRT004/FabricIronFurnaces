@@ -1,26 +1,26 @@
 package ironfurnaces.container;
 
 import ironfurnaces.items.ItemAugment;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.slot.Slot;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.inventory.Slot;
 
 public class SlotIronFurnaceAugment extends Slot {
 
     private final BlockIronFurnaceScreenHandlerBase handler;
 
-    public SlotIronFurnaceAugment(BlockIronFurnaceScreenHandlerBase handler, Inventory inventory, int index, int x, int y) {
-        super(inventory, index, x, y);
+    public SlotIronFurnaceAugment(BlockIronFurnaceScreenHandlerBase handler, Container container, int index, int x, int y) {
+        super(container, index, x, y);
         this.handler = handler;
-    }
-
-    @Override
-    public boolean canInsert(ItemStack stack) {
-        return stack.getItem() instanceof ItemAugment;
-    }
-
-    @Override
-    public int getMaxItemCount(ItemStack stack) {
-        return 1;
-    }
+     }
+ 
+     @Override
+     public boolean mayPlace(ItemStack stack) {
+         return stack.getItem() instanceof ItemAugment;
+     }
+ 
+     @Override
+     public int getMaxStackSize(ItemStack stack) {
+         return 1;
+     }
 }

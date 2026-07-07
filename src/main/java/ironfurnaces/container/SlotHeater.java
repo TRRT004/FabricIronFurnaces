@@ -1,19 +1,19 @@
 package ironfurnaces.container;
 
 import ironfurnaces.items.ItemHeater;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.slot.Slot;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.inventory.Slot;
 
 public class SlotHeater extends Slot {
 
-    public SlotHeater(Inventory inv, int slotIndex, int xPosition, int yPosition) {
+    public SlotHeater(Container inv, int slotIndex, int xPosition, int yPosition) {
         super(inv, slotIndex, xPosition, yPosition);
     }
 
 
     @Override
-    public boolean canInsert(ItemStack stack) {
+    public boolean mayPlace(ItemStack stack) {
         return stack.getItem() instanceof ItemHeater;
     }
 

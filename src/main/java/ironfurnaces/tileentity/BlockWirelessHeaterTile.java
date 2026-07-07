@@ -3,35 +3,39 @@ package ironfurnaces.tileentity;
 import ironfurnaces.container.BlockWirelessHeaterScreenHandler;
 import ironfurnaces.init.Reference;
 import ironfurnaces.items.ItemHeater;
-import net.fabricmc.fabric.api.block.entity.BlockEntityClientSerializable;
-import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.World;
-import team.reborn.energy.EnergySide;
-import team.reborn.energy.EnergyStorage;
-import team.reborn.energy.EnergyTier;
 
-public class BlockWirelessHeaterTile extends TileEntityInventory implements ExtendedScreenHandlerFactory, EnergyStorage, BlockEntityClientSerializable {
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.item.ItemEntity;
+
+
+
+
+public class BlockWirelessHeaterTile extends TileEntityInventory implements net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory<BlockPos> {
 
     private double energy;
     private int capacity = 100000;
 
-
-
     public BlockWirelessHeaterTile(BlockPos pos, BlockState state) {
         super(Reference.WIRELESS_HEATER_TILE, pos, state, 1);
     }
-
 
     public double getEnergy()
     {
@@ -43,85 +47,82 @@ public class BlockWirelessHeaterTile extends TileEntityInventory implements Exte
         return this.capacity;
     }
 
-
     @Override
-    public void fromClientTag(NbtCompound tag) {
-        this.readNbt(tag);
-        world.updateListeners(pos, world.getBlockState(pos).getBlock().getDefaultState(), world.getBlockState(pos), 3);
-        this.markDirty();
+    public Packet<ClientGamePacketListener> getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
     }
 
     @Override
-    public NbtCompound toClientTag(NbtCompound tag) {
-        this.markDirty();
-        return this.writeNbt(tag);
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        return this.saveWithoutMetadata(registries);
     }
 
-    public static void tick(World world, BlockPos pos, BlockState state, BlockWirelessHeaterTile e) {
-        if (!world.isClient)
+    public static void tick(Level world, BlockPos pos, BlockState state, BlockWirelessHeaterTile e) {
+        if (!world.isClientSide())
         {
-            ItemStack stack = e.getStack(0);
+            ItemStack stack = e.getItem(0);
             if (!stack.isEmpty()) {
-                NbtCompound nbt = new NbtCompound();
-                stack.setNbt(nbt);
+                CompoundTag nbt = new CompoundTag();
                 nbt.putInt("X", pos.getX());
                 nbt.putInt("Y", pos.getY());
                 nbt.putInt("Z", pos.getZ());
+                stack.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.of(nbt));
             }
         }
     }
 
     @Override
-    public void readNbt(NbtCompound compound) {
-        super.readNbt(compound);
-        this.energy = compound.getDouble("energy");
-        this.capacity = compound.getInt("capacity");
+    protected void loadAdditional(ValueInput compound) {
+        super.loadAdditional(compound);
+        this.energy = compound.getDoubleOr("energy", 0.0);
+        this.capacity = compound.getIntOr("capacity", 100000);
     }
 
     @Override
-    public NbtCompound writeNbt(NbtCompound compound) {
-        super.writeNbt(compound);
+    protected void saveAdditional(ValueOutput compound) {
+        super.saveAdditional(compound);
         compound.putDouble("energy", this.energy);
         compound.putInt("capacity", this.capacity);
-        return compound;
     }
 
     @Override
-    public int[] IgetSlotsForFace(Direction side) {
+    public int[] getSlotsForFace(Direction side) {
         return null;
     }
 
     @Override
-    public boolean IcanExtractItem(int index, ItemStack stack, Direction direction) {
+    public boolean canExtractItem(int index, ItemStack stack, Direction direction) {
         return true;
     }
 
     @Override
-    public String IgetName() {
+    public String getContainerName() {
         return "container.ironfurnaces.wireless_energy_heater";
     }
 
     @Override
-    public boolean IisItemValidForSlot(int index, ItemStack stack) {
+    public boolean isItemValidForSlot(int index, ItemStack stack) {
         return stack.getItem() instanceof ItemHeater;
     }
 
     @Override
-    public ScreenHandler IcreateMenu(int i, PlayerInventory playerInventory, PlayerEntity playerEntity) {
+    public AbstractContainerMenu createMenu(int i, net.minecraft.world.entity.player.Inventory playerInventory, Player playerEntity) {
         return new BlockWirelessHeaterScreenHandler(i, playerEntity.getInventory(), this);
     }
 
     @Override
-    public void writeScreenOpeningData(ServerPlayerEntity player, PacketByteBuf buf) {
-        buf.writeBlockPos(pos);
+    public BlockPos getScreenOpeningData(ServerPlayer player) {
+        return this.worldPosition;
     }
 
-    @Override
-    public double getStored(EnergySide face) {
-        return energy;
+    
+
+    public void extractEnergy(double amount) {
+        this.energy -= Math.min(amount, this.energy);
+        this.setChanged();
     }
 
-    @Override
+    @Deprecated
     public void setStored(double amount) {
         energy = amount;
         if (energy > getMaxStoredPower())
@@ -132,26 +133,35 @@ public class BlockWirelessHeaterTile extends TileEntityInventory implements Exte
         {
             energy = 0;
         }
-        this.markDirty();
+        this.setChanged();
     }
 
-    @Override
     public double getMaxStoredPower() {
         return capacity;
     }
 
-    @Override
-    public EnergyTier getTier() {
-        return EnergyTier.INSANE;
-    }
+    
 
     @Override
-    public void markDirty() {
-        super.markDirty();
-        if (hasWorld() && getWorld() instanceof ServerWorld) {
+    public void setChanged() {
+        super.setChanged();
+        if (hasLevel() && getLevel() instanceof ServerLevel) {
             sync();
         }
     }
 
-
+    @Override
+    public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+        super.preRemoveSideEffects(pos, state);
+        if (this.level != null && !this.level.isClientSide()) {
+            ItemStack stack = new ItemStack(Reference.WIRELESS_HEATER);
+            net.minecraft.world.item.component.CustomData.update(
+                net.minecraft.core.component.DataComponents.CUSTOM_DATA,
+                stack,
+                tag -> tag.putInt("energy", (int)this.getEnergy())
+            );
+            java.util.Random rand = new java.util.Random();
+            this.level.addFreshEntity(new ItemEntity(this.level, pos.getX() + rand.nextInt(1), pos.getY() + rand.nextInt(1), pos.getZ() + rand.nextInt(1), stack));
+        }
+    }
 }

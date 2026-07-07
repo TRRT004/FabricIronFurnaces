@@ -1,15 +1,16 @@
 package ironfurnaces.blocks;
 
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import ironfurnaces.init.Reference;
 import ironfurnaces.tileentity.BlockEmeraldFurnaceTile;
-import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityTicker;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
 public class BlockEmeraldFurnace extends BlockIronFurnaceBase {
@@ -17,18 +18,18 @@ public class BlockEmeraldFurnace extends BlockIronFurnaceBase {
     public static final String EMERALD_FURNACE = "emerald_furnace";
 
     public BlockEmeraldFurnace() {
-        super(FabricBlockSettings.copyOf(Blocks.EMERALD_BLOCK));
+        super(BlockBehaviour.Properties.ofFullCopy(Blocks.EMERALD_BLOCK));
     }
 
     @Nullable
     @Override
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level world, BlockState state, BlockEntityType<T> type) {
         return checkType(world, type, Reference.EMERALD_FURNACE_TILE);
     }
 
 
     @Override
-    public @Nullable BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
+    public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new BlockEmeraldFurnaceTile(pos, state);
     }
 }

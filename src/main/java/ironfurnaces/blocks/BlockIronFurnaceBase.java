@@ -7,76 +7,80 @@ import ironfurnaces.items.ItemXmas;
 import ironfurnaces.tileentity.BlockIronFurnaceTileBase;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockEntityProvider;
-import net.minecraft.block.BlockRenderType;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityTicker;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.item.ItemStack;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.screen.NamedScreenHandlerFactory;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.stat.Stats;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.IntProperty;
-import net.minecraft.state.property.Properties;
-import net.minecraft.text.LiteralText;
-import net.minecraft.util.*;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.stats.Stats;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.Containers;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.Mirror;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Random;
+import java.util.List;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import java.util.Collection;
 import java.util.function.ToIntFunction;
 
-public abstract class BlockIronFurnaceBase extends Block implements BlockEntityProvider {
+public abstract class BlockIronFurnaceBase extends Block implements EntityBlock {
+    public static final IntegerProperty TYPE = IntegerProperty.create("type", 0, 4);
+    public static final IntegerProperty JOVIAL = IntegerProperty.create("jovial", 0, 2);
 
-    public static final IntProperty TYPE = IntProperty.of("type", 0, 2);
-    public static final IntProperty JOVIAL = IntProperty.of("jovial", 0, 2);
-
-
-    public BlockIronFurnaceBase(FabricBlockSettings properties) {
-        super(properties.luminance(createLightLevelFromBlockState(13)));
-        this.setDefaultState((BlockState)((BlockState)((BlockState)this.stateManager.getDefaultState()).with(Properties.HORIZONTAL_FACING, Direction.NORTH)).with(Properties.LIT, false).with(TYPE, 0).with(JOVIAL, 0));
+    public BlockIronFurnaceBase(BlockBehaviour.Properties properties) {
+        super(properties.lightLevel(createLightLevelFromBlockState(13)));
+        this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.NORTH)).setValue(BlockStateProperties.LIT, false).setValue(TYPE, 0).setValue(JOVIAL, 0));
     }
 
     @Nullable
-    protected static <T extends BlockEntity> BlockEntityTicker<T> checkType(World world, BlockEntityType<T> givenType, BlockEntityType<? extends BlockIronFurnaceTileBase> expectedType) {
-        return world.isClient ? null : checkType(givenType, expectedType, BlockIronFurnaceTileBase::tick);
+    protected static <T extends BlockEntity> BlockEntityTicker<T> checkType(Level world, BlockEntityType<T> givenType, BlockEntityType<? extends BlockIronFurnaceTileBase> expectedType) {
+        return world.isClientSide() ? null : checkType(givenType, expectedType, BlockIronFurnaceTileBase::tick);
     }
 
-    /**
-     * {@return the ticker if the given type and expected type are the same, or {@code null} if they are different}
-     */
     @Nullable
     protected static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> checkType(BlockEntityType<A> givenType, BlockEntityType<E> expectedType, BlockEntityTicker<? super E> ticker) {
         return expectedType == givenType ? (BlockEntityTicker<A>) ticker : null;
     }
 
-
     private static ToIntFunction<BlockState> createLightLevelFromBlockState(int litLevel) {
         return (blockState) -> {
-            return (Boolean)blockState.get(Properties.LIT) ? litLevel : 0;
+            return (Boolean)blockState.getValue(BlockStateProperties.LIT) ? litLevel : 0;
         };
     }
 
-    private int calculateOutput(World worldIn, BlockPos pos, BlockState state) {
+    private int calculateOutput(Level worldIn, BlockPos pos, BlockState state) {
         BlockIronFurnaceTileBase tile = ((BlockIronFurnaceTileBase)worldIn.getBlockEntity(pos));
-        int i = this.getComparatorOutput(state, worldIn, pos);
+        int i = this.getAnalogOutputSignal(state, worldIn, pos, null);
         if (tile != null)
         {
             int j = tile.furnaceSettings.get(9);
@@ -86,18 +90,17 @@ public abstract class BlockIronFurnaceBase extends Block implements BlockEntityP
     }
 
     @Override
-    public boolean emitsRedstonePower(BlockState state) {
+    public boolean isSignalSource(BlockState state) {
         return true;
     }
 
     @Override
-    public int getStrongRedstonePower(BlockState blockState, BlockView world, BlockPos pos, Direction side) {
-        return getWeakRedstonePower(blockState, world, pos, side);
+    public int getDirectSignal(BlockState blockState, BlockGetter world, BlockPos pos, Direction side) {
+        return getSignal(blockState, world, pos, side);
     }
 
-
     @Override
-    public int getWeakRedstonePower(BlockState blockState, BlockView world, BlockPos pos, Direction side) {
+    public int getSignal(BlockState blockState, BlockGetter world, BlockPos pos, Direction side) {
         BlockIronFurnaceTileBase furnace = ((BlockIronFurnaceTileBase) world.getBlockEntity(pos));
         if (furnace != null)
         {
@@ -116,75 +119,86 @@ public abstract class BlockIronFurnaceBase extends Block implements BlockEntityP
             }
             else
             {
-                return calculateOutput(furnace.getWorld(), pos, blockState);
+                return calculateOutput(furnace.getLevel(), pos, blockState);
             }
         }
         return 0;
     }
 
     @Override
-    public BlockState getPlacementState(ItemPlacementContext ctx) {
-        return (BlockState)this.getDefaultState().with(Properties.HORIZONTAL_FACING, ctx.getPlayerFacing().getOpposite());
+    public BlockState getStateForPlacement(BlockPlaceContext ctx) {
+        return (BlockState)this.defaultBlockState().setValue(BlockStateProperties.HORIZONTAL_FACING, ctx.getHorizontalDirection().getOpposite());
     }
 
     @Override
-    public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack itemStack) {
-        if (itemStack.hasCustomName()) {
+    public void setPlacedBy(Level world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack itemStack) {
+        if (itemStack.has(net.minecraft.core.component.DataComponents.CUSTOM_NAME)) {
             BlockEntity blockEntity = world.getBlockEntity(pos);
             if (blockEntity instanceof BlockIronFurnaceTileBase) {
-                ((BlockIronFurnaceTileBase)blockEntity).setCustomName(itemStack.getName());
-
+                ((BlockIronFurnaceTileBase)blockEntity).setCustomName(itemStack.getHoverName());
             }
         }
-
     }
-
 
     @Override
-    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
-        ItemStack stack = player.getActiveItem().copy();
-        if (world.isClient) {
-            return ActionResult.SUCCESS;
+    protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        if (world.isClientSide()) {
+            return InteractionResult.SUCCESS;
         } else {
-            if (player.getStackInHand(hand).getItem() instanceof ItemAugment && !(player.isSneaking())) {
+            if (stack.getItem() instanceof ItemAugment && !player.isSecondaryUseActive()) {
                 this.interactAugment(world, pos, player, hand);
-            } else if (player.getStackInHand(hand).getItem() instanceof ItemFurnaceCopy && !(player.isSneaking())) {
+                return InteractionResult.CONSUME;
+            } else if (stack.getItem() instanceof ItemFurnaceCopy && !player.isSecondaryUseActive()) {
                 this.interactCopy(world, pos, player, hand);
-            } else if (player.getStackInHand(hand).getItem() instanceof ItemSpooky && !(player.isSneaking())) {
+                return InteractionResult.CONSUME;
+            } else if (stack.getItem() instanceof ItemSpooky && !player.isSecondaryUseActive()) {
                 return this.interactJovial(world, pos, player, hand, 1);
-            } else if (player.getStackInHand(hand).getItem() instanceof ItemXmas && !(player.isSneaking())) {
+            } else if (stack.getItem() instanceof ItemXmas && !player.isSecondaryUseActive()) {
                 return this.interactJovial(world, pos, player, hand, 2);
-            } else if (player.getStackInHand(hand).isEmpty() && player.isSneaking()) {
-                return this.interactJovial(world, pos, player, hand, 0);
             } else {
                 this.openScreen(world, pos, player);
+                return InteractionResult.CONSUME;
             }
-            return ActionResult.CONSUME;
         }
     }
 
-    private ActionResult interactJovial(World world, BlockPos pos, PlayerEntity player, Hand handIn, int jovial) {
-        if (!(player.getStackInHand(handIn).getItem() instanceof ItemSpooky
-                || !(player.getStackInHand(handIn).getItem() instanceof ItemXmas)
-                || !(player.getStackInHand(handIn).isEmpty()))) {
-            return ActionResult.SUCCESS;
+    @Override
+    protected InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult hit) {
+        if (world.isClientSide()) {
+            return InteractionResult.SUCCESS;
+        } else {
+            if (player.isSecondaryUseActive()) {
+                return this.interactJovial(world, pos, player, player.getUsedItemHand(), 0);
+            } else {
+                this.openScreen(world, pos, player);
+                return InteractionResult.CONSUME;
+            }
+        }
+    }
+
+    private InteractionResult interactJovial(Level world, BlockPos pos, Player player, InteractionHand handIn, int jovial) {
+        ItemStack stack = player.getItemInHand(handIn);
+        if (!(stack.getItem() instanceof ItemSpooky
+                || !(stack.getItem() instanceof ItemXmas)
+                || !(stack.isEmpty()))) {
+            return InteractionResult.SUCCESS;
         }
         BlockEntity te = world.getBlockEntity(pos);
         if (!(te instanceof BlockIronFurnaceTileBase)) {
-            return ActionResult.SUCCESS;
+            return InteractionResult.SUCCESS;
         }
         ((BlockIronFurnaceTileBase)te).jovial = jovial;
-        return ActionResult.SUCCESS;
+        return InteractionResult.SUCCESS;
     }
 
-    private ActionResult interactCopy(World world, BlockPos pos, PlayerEntity player, Hand handIn) {
-        ItemStack stack = player.getInventory().getStack(player.getInventory().selectedSlot);
+    private InteractionResult interactCopy(Level world, BlockPos pos, Player player, InteractionHand handIn) {
+        ItemStack stack = player.getInventory().getItem(player.getInventory().getSelectedSlot());
         if (!(stack.getItem() instanceof ItemFurnaceCopy)) {
-            return ActionResult.SUCCESS;
+            return InteractionResult.SUCCESS;
         }
         BlockEntity te = world.getBlockEntity(pos);
         if (!(te instanceof BlockIronFurnaceTileBase)) {
-            return ActionResult.SUCCESS;
+            return InteractionResult.SUCCESS;
         }
 
         int[] settings = new int[((BlockIronFurnaceTileBase) te).furnaceSettings.size()];
@@ -192,110 +206,105 @@ public abstract class BlockIronFurnaceBase extends Block implements BlockEntityP
         {
             settings[i] = ((BlockIronFurnaceTileBase) te).furnaceSettings.get(i);
         }
-        stack.getOrCreateNbt().putIntArray("settings", settings);
+        
+        CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
+        tag.putIntArray("settings", settings);
+        stack.set(DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.of(tag));
 
         ((BlockIronFurnaceTileBase)te).onUpdateSent();
-        player.sendMessage(new LiteralText("Settings copied"), true);
-        return ActionResult.SUCCESS;
+        player.displayClientMessage(Component.literal("Settings copied"), true);
+        return InteractionResult.SUCCESS;
     }
 
-    private ActionResult interactAugment(World world, BlockPos pos, PlayerEntity player, Hand handIn) {
-        if (!(player.getStackInHand(handIn).getItem() instanceof ItemAugment)) {
-            return ActionResult.SUCCESS;
+    private InteractionResult interactAugment(Level world, BlockPos pos, Player player, InteractionHand handIn) {
+        ItemStack stack = player.getItemInHand(handIn);
+        if (!(stack.getItem() instanceof ItemAugment)) {
+            return InteractionResult.SUCCESS;
         }
         BlockEntity te = world.getBlockEntity(pos);
         if (!(te instanceof BlockIronFurnaceTileBase)) {
-            return ActionResult.SUCCESS;
+            return InteractionResult.SUCCESS;
         }
-        if (!(((Inventory) te).getStack(3).isEmpty())) {
+        if (!(((Container) te).getItem(3).isEmpty())) {
             if (!player.isCreative()) {
-                world.spawnEntity(new ItemEntity(world, pos.getX(), pos.getY() + 1, pos.getZ(), ((Inventory) te).getStack(3)));
+                world.addFreshEntity(new ItemEntity(world, pos.getX(), pos.getY() + 1, pos.getZ(), ((Container) te).getItem(3)));
             }
         }
-        ((Inventory) te).setStack(3, new ItemStack(player.getStackInHand(handIn).getItem(), 1));
+        ((Container) te).setItem(3, new ItemStack(stack.getItem(), 1));
 
-        world.playSound((PlayerEntity)null, pos, SoundEvents.BLOCK_ANVIL_USE, SoundCategory.BLOCKS, 0.8F, 1.0F);
+        world.playSound((Player)null, pos, SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 0.8F, 1.0F);
 
         if (!player.isCreative()) {
-            player.getStackInHand(handIn).decrement(1);
+            stack.shrink(1);
         }
-        return ActionResult.SUCCESS;
+        return InteractionResult.SUCCESS;
     }
 
-    protected void openScreen(World world, BlockPos pos, PlayerEntity player) {
+    protected void openScreen(Level world, BlockPos pos, Player player) {
         BlockEntity blockEntity = world.getBlockEntity(pos);
         if (blockEntity instanceof BlockIronFurnaceTileBase) {
             ((BlockIronFurnaceTileBase)blockEntity).placeConfig();
-            player.openHandledScreen((NamedScreenHandlerFactory)blockEntity);
-            player.incrementStat(Stats.INTERACT_WITH_FURNACE);
+            player.openMenu((MenuProvider)blockEntity);
+            player.awardStat(Stats.INTERACT_WITH_FURNACE);
         }
-
     }
 
     @Environment(EnvType.CLIENT)
     @Override
-    public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
-        if ((Boolean)state.get(Properties.LIT)) {
+    public void animateTick(BlockState state, Level world, BlockPos pos, RandomSource random) {
+        if ((Boolean)state.getValue(BlockStateProperties.LIT)) {
             double d = (double)pos.getX() + 0.5D;
             double e = (double)pos.getY();
             double f = (double)pos.getZ() + 0.5D;
             if (random.nextDouble() < 0.1D) {
-                world.playSound(d, e, f, SoundEvents.BLOCK_FURNACE_FIRE_CRACKLE, SoundCategory.BLOCKS, 1.0F, 1.0F, false);
+                world.playLocalSound(d, e, f, SoundEvents.FURNACE_FIRE_CRACKLE, SoundSource.BLOCKS, 1.0F, 1.0F, false);
             }
 
-            Direction direction = (Direction)state.get(Properties.HORIZONTAL_FACING);
+            Direction direction = (Direction)state.getValue(BlockStateProperties.HORIZONTAL_FACING);
             Direction.Axis axis = direction.getAxis();
             double g = 0.52D;
             double h = random.nextDouble() * 0.6D - 0.3D;
-            double i = axis == Direction.Axis.X ? (double)direction.getOffsetX() * 0.52D : h;
+            double i = axis == Direction.Axis.X ? (double)direction.getStepX() * 0.52D : h;
             double j = random.nextDouble() * 6.0D / 16.0D;
-            double k = axis == Direction.Axis.Z ? (double)direction.getOffsetZ() * 0.52D : h;
+            double k = axis == Direction.Axis.Z ? (double)direction.getStepZ() * 0.52D : h;
             world.addParticle(ParticleTypes.SMOKE, d + i, e + j, f + k, 0.0D, 0.0D, 0.0D);
             world.addParticle(ParticleTypes.FLAME, d + i, e + j, f + k, 0.0D, 0.0D, 0.0D);
         }
     }
 
     @Override
-    public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
-        if (!state.isOf(newState.getBlock())) {
-            BlockEntity blockEntity = world.getBlockEntity(pos);
-            if (blockEntity instanceof BlockIronFurnaceTileBase) {
-                ItemScatterer.spawn(world, (BlockPos)pos, (Inventory)((BlockIronFurnaceTileBase)blockEntity));
-                ((BlockIronFurnaceTileBase)blockEntity).method_27354(world, Vec3d.ofCenter(pos));
-                world.updateComparators(pos, this);
-            }
-
-            super.onStateReplaced(state, world, pos, newState, moved);
-        }
+    protected void affectNeighborsAfterRemoval(BlockState state, net.minecraft.server.level.ServerLevel world, BlockPos pos, boolean moved) {
+        super.affectNeighborsAfterRemoval(state, world, pos, moved);
+        world.updateNeighborsAt(pos, this);
     }
 
     @Override
-    public boolean hasComparatorOutput(BlockState state) {
+    public boolean hasAnalogOutputSignal(BlockState state) {
         return true;
     }
 
     @Override
-    public int getComparatorOutput(BlockState state, World world, BlockPos pos) {
-        return ScreenHandler.calculateComparatorOutput(world.getBlockEntity(pos));
+    protected int getAnalogOutputSignal(BlockState state, Level world, BlockPos pos, Direction direction) {
+        return AbstractContainerMenu.getRedstoneSignalFromBlockEntity(world.getBlockEntity(pos));
     }
 
     @Override
-    public BlockRenderType getRenderType(BlockState state) {
-        return BlockRenderType.MODEL;
+    public RenderShape getRenderShape(BlockState state) {
+        return RenderShape.MODEL;
     }
 
     @Override
-    public BlockState rotate(BlockState state, BlockRotation rotation) {
-        return (BlockState)state.with(Properties.HORIZONTAL_FACING, rotation.rotate((Direction)state.get(Properties.HORIZONTAL_FACING)));
+    public BlockState rotate(BlockState state, Rotation rotation) {
+        return (BlockState)state.setValue(BlockStateProperties.HORIZONTAL_FACING, rotation.rotate((Direction)state.getValue(BlockStateProperties.HORIZONTAL_FACING)));
     }
 
     @Override
-    public BlockState mirror(BlockState state, BlockMirror mirror) {
-        return state.rotate(mirror.getRotation((Direction)state.get(Properties.HORIZONTAL_FACING)));
+    public BlockState mirror(BlockState state, Mirror mirror) {
+        return state.rotate(mirror.getRotation((Direction)state.getValue(BlockStateProperties.HORIZONTAL_FACING)));
     }
 
     @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-        builder.add(Properties.HORIZONTAL_FACING, Properties.LIT, TYPE, JOVIAL);
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.LIT, TYPE, JOVIAL);
     }
 }

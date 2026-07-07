@@ -1,19 +1,20 @@
 package ironfurnaces.container;
 
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.screen.slot.Slot;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.inventory.Slot;
 
 public class SlotIronFurnaceFuel extends Slot {
     private final BlockIronFurnaceScreenHandlerBase handler;
 
-    public SlotIronFurnaceFuel(BlockIronFurnaceScreenHandlerBase handler, Inventory inventory, int index, int x, int y) {
-        super(inventory, index, x, y);
+    public SlotIronFurnaceFuel(BlockIronFurnaceScreenHandlerBase handler, Container container, int index, int x, int y) {
+        super(container, index, x, y);
         this.handler = handler;
     }
 
-    public boolean canInsert(ItemStack stack) {
+    @Override
+    public boolean mayPlace(ItemStack stack) {
         return this.handler.isFuel(stack) || isBucket(stack);
     }
 

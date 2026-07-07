@@ -1,12 +1,11 @@
 {
   "required": true,
   "package": "ironfurnaces.mixin",
-  "compatibilityLevel": "JAVA_16",
+  "compatibilityLevel": "JAVA_21",
   "mixins": [
 
   ],
   "client": [
-    "MixinItemRenderer"
   ],
   "injectors": {
     "defaultRequire": 1

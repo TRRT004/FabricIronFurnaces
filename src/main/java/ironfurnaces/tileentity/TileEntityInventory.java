@@ -1,80 +1,75 @@
 package ironfurnaces.tileentity;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.Inventories;
-import net.minecraft.inventory.SidedInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.screen.NamedScreenHandlerFactory;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
-import net.minecraft.util.Nameable;
-import net.minecraft.util.collection.DefaultedList;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.WorldlyContainer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.Nameable;
+import net.minecraft.world.Clearable;
+import net.minecraft.core.NonNullList;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import java.util.Optional;
 
-public abstract class TileEntityInventory extends BlockEntity implements ITileInventory, SidedInventory, NamedScreenHandlerFactory, Nameable {
-    protected DefaultedList<ItemStack> inventory;
-    protected Text name;
+public abstract class TileEntityInventory extends BlockEntity implements ITileInventory, WorldlyContainer, MenuProvider, Nameable, Clearable {
+    protected NonNullList<ItemStack> inventory;
+    protected Component name;
 
-    public TileEntityInventory(BlockEntityType<?> tileEntityTypeIn, BlockPos pos, BlockState state, int sizeInventory) {
+    public TileEntityInventory(BlockEntityType<?> tileEntityTypeIn, BlockPos pos, BlockState state, int sizeContainer) {
         super(tileEntityTypeIn, pos, state);
-        this.inventory = DefaultedList.ofSize(sizeInventory, ItemStack.EMPTY);
+        this.inventory = NonNullList.withSize(sizeContainer, ItemStack.EMPTY);
     }
 
-    /**
     @Override
-    public BlockEntityUpdateS2CPacket toUpdatePacket() {
-        return new BlockEntityUpdateS2CPacket(pos, 127, this.toTag(new CompoundTag()));
-    }
-     **/
-
-    @Override
-    public boolean canPlayerUse(PlayerEntity player) {
-        if (this.world.getBlockEntity(this.pos) != this) {
+    public boolean stillValid(Player player) {
+        if (this.level.getBlockEntity(this.worldPosition) != this) {
             return false;
         } else {
-            return player.squaredDistanceTo((double)this.pos.getX() + 0.5D, (double)this.pos.getY() + 0.5D, (double)this.pos.getZ() + 0.5D) <= 64.0D;
+            return player.distanceToSqr((double)this.worldPosition.getX() + 0.5D, (double)this.worldPosition.getY() + 0.5D, (double)this.worldPosition.getZ() + 0.5D) <= 64.0D;
         }
     }
 
-
     @Override
-    public boolean isValid(int index, ItemStack stack) {
-        return this.IisItemValidForSlot(index, stack);
+    public boolean canPlaceItem(int index, ItemStack stack) {
+        return this.isItemValidForSlot(index, stack);
     }
 
-    public void setCustomName(Text name) {
+    public void setCustomName(Component name) {
         this.name = name;
     }
 
     @Override
-    public Text getName() {
-        return (this.name != null ? this.name : new TranslatableText(IgetName()));
+    public Component getName() {
+        return this.name != null ? this.name : Component.translatable(getContainerName());
     }
 
     @Override
-    public int[] getAvailableSlots(Direction side) {
-        return this.IgetSlotsForFace(side);
+    public int[] getSlotsForFace(Direction side) {
+        return new int[0];
     }
 
     @Override
-    public boolean canExtract(int index, ItemStack stack, Direction direction) {
-        return IcanExtractItem(index, stack, direction);
+    public boolean canTakeItemThroughFace(int index, ItemStack stack, Direction direction) {
+        return canExtractItem(index, stack, direction);
     }
 
     @Override
-    public boolean canInsert(int index, ItemStack itemStackIn, Direction direction) {
-        return this.isValid(index, itemStackIn);
+    public boolean canPlaceItemThroughFace(int index, ItemStack itemStackIn, Direction direction) {
+        return this.canPlaceItem(index, itemStackIn);
     }
 
     @Override
-    public int size() {
+    public int getContainerSize() {
         return this.inventory.size();
     }
 
@@ -87,74 +82,73 @@ public abstract class TileEntityInventory extends BlockEntity implements ITileIn
         }
         return true;
     }
+
     @Override
-    public ItemStack getStack(int slot) {
+    public ItemStack getItem(int slot) {
         return (ItemStack)this.inventory.get(slot);
     }
 
     @Override
-    public ItemStack removeStack(int slot, int amount) {
-        return Inventories.splitStack(this.inventory, slot, amount);
+    public ItemStack removeItem(int slot, int amount) {
+        return ContainerHelper.removeItem(this.inventory, slot, amount);
     }
 
     @Override
-    public ItemStack removeStack(int slot) {
-        return Inventories.removeStack(this.inventory, slot);
+    public ItemStack removeItemNoUpdate(int slot) {
+        return ContainerHelper.takeItem(this.inventory, slot);
     }
 
     @Override
-    public void setStack(int slot, ItemStack stack) {
+    public void setItem(int slot, ItemStack stack) {
         ItemStack itemStack = (ItemStack)this.inventory.get(slot);
-        boolean bl = !stack.isEmpty() && stack.isItemEqualIgnoreDamage(itemStack) && ItemStack.areNbtEqual(stack, itemStack);
+        boolean bl = !stack.isEmpty() && ItemStack.isSameItemSameComponents(stack, itemStack);
         this.inventory.set(slot, stack);
-        if (stack.getCount() > this.getMaxCountPerStack()) {
-            stack.setCount(this.getMaxCountPerStack());
+        if (stack.getCount() > this.getMaxStackSize()) {
+            stack.setCount(this.getMaxStackSize());
         }
-
-    }
-
-
-
-    public void readNbt(NbtCompound compound) {
-        super.readNbt(compound);
-        this.inventory = DefaultedList.ofSize(this.size(), ItemStack.EMPTY);
-        Inventories.readNbt(compound, this.inventory);
-        if (compound.contains("CustomName", 8)) {
-            this.name = Text.Serializer.fromJson(compound.getString("CustomName"));
-        }
-    }
-
-    public NbtCompound writeNbt(NbtCompound compound) {
-        super.writeNbt(compound);
-        Inventories.writeNbt(compound, this.inventory);
-        if (this.name != null) {
-            compound.putString("CustomName", Text.Serializer.toJson(this.name));
-        }
-        return compound;
     }
 
     @Override
-    public void clear() {
+    protected void loadAdditional(ValueInput input) {
+        super.loadAdditional(input);
+        this.inventory = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
+        ContainerHelper.loadAllItems(input, this.inventory);
+        Optional<Component> nameOpt = input.read("CustomName", Component.CODEC);
+        this.name = nameOpt.isPresent() ? nameOpt.get() : null;
+    }
+
+    @Override
+    protected void saveAdditional(ValueOutput output) {
+        super.saveAdditional(output);
+        ContainerHelper.saveAllItems(output, this.inventory);
+        if (this.name != null) {
+            output.store("CustomName", Component.CODEC, this.name);
+        }
+    }
+
+    public void sync() {
+        if (this.level != null && !this.level.isClientSide()) {
+            ((net.minecraft.server.level.ServerLevel) this.level).getChunkSource().blockChanged(this.worldPosition);
+        }
+    }
+
+    @Override
+    public void clearContent() {
         this.inventory.clear();
     }
 
     @Override
-    public boolean hasCustomName() {
-        return this.name != null;
-    }
-
-    @Override
-    public Text getCustomName() {
+    public Component getCustomName() {
         return this.name;
     }
 
     @Override
-    public Text getDisplayName() {
+    public Component getDisplayName() {
         return this.getName();
     }
 
     @Override
-    public ScreenHandler createMenu(int i, PlayerInventory playerInventory, PlayerEntity playerEntity) {
-        return IcreateMenu(i, playerInventory, playerEntity);
+    public AbstractContainerMenu createMenu(int i, net.minecraft.world.entity.player.Inventory playerInventory, Player playerEntity) {
+        return createMenu(i, playerInventory, playerEntity);
     }
 }

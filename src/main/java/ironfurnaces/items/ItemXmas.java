@@ -3,30 +3,30 @@ package ironfurnaces.items;
 import ironfurnaces.init.Reference;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.item.TooltipContext;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
-import net.minecraft.util.Formatting;
-import net.minecraft.world.World;
+
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.Component;
+
+import net.minecraft.ChatFormatting;
+import net.minecraft.world.level.Level;
 
 import java.util.List;
 
 public class ItemXmas extends Item {
 
 
-    public ItemXmas(Settings properties) {
+    public ItemXmas(Item.Properties properties) {
         super(properties);
     }
 
 
     @Environment(EnvType.CLIENT)
     @Override
-    public void appendTooltip(ItemStack stack, World world, List<Text> tooltip, TooltipContext context) {
-        tooltip.add(new TranslatableText("tooltip." + Reference.MOD_ID + ".xmas_right_click").setStyle(Style.EMPTY.withFormatting((Formatting.GRAY))));
-        tooltip.add(new TranslatableText("tooltip." + Reference.MOD_ID + ".xmas1").setStyle(Style.EMPTY.withFormatting((Formatting.GRAY))));
-        tooltip.add(new TranslatableText("tooltip." + Reference.MOD_ID + ".xmas2").setStyle(Style.EMPTY.withFormatting((Formatting.GRAY))));
+    public void appendHoverText(ItemStack stack, Item.TooltipContext context, net.minecraft.world.item.component.TooltipDisplay display, java.util.function.Consumer<Component> tooltip, net.minecraft.world.item.TooltipFlag flag) {
+        tooltip.accept(Component.translatable("tooltip." + Reference.MOD_ID + ".xmas_right_click").withStyle(ChatFormatting.GRAY));
+        tooltip.accept(Component.translatable("tooltip." + Reference.MOD_ID + ".xmas1").withStyle(ChatFormatting.GRAY));
+        tooltip.accept(Component.translatable("tooltip." + Reference.MOD_ID + ".xmas2").withStyle(ChatFormatting.GRAY));
     }
 }

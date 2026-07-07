@@ -4,13 +4,13 @@ import ironfurnaces.container.BlockDiamondFurnaceScreenHandler;
 import ironfurnaces.init.Reference;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 
 public class BlockDiamondFurnaceScreen extends BlockIronFurnaceScreenBase<BlockDiamondFurnaceScreenHandler> {
 
-    public BlockDiamondFurnaceScreen(BlockDiamondFurnaceScreenHandler container, PlayerInventory inv, Text name) {
-        super(container, inv, name, new Identifier(Reference.MOD_ID,"textures/gui/furnace.png"));
+    public BlockDiamondFurnaceScreen(BlockDiamondFurnaceScreenHandler container, net.minecraft.world.entity.player.Inventory inv, Component name) {
+        super(container, inv, name, Identifier.fromNamespaceAndPath(Reference.MOD_ID,"textures/gui/furnace.png"));
     }
 }

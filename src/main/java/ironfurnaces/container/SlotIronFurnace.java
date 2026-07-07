@@ -1,47 +1,46 @@
 package ironfurnaces.container;
 
 import ironfurnaces.tileentity.BlockIronFurnaceTileBase;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.slot.Slot;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.inventory.Slot;
 
 public class SlotIronFurnace extends Slot {
 
-    private final PlayerEntity player;
+    private final Player player;
     private int amount;
 
-    public SlotIronFurnace(PlayerEntity player, Inventory inventory, int index, int x, int y) {
-        super(inventory, index, x, y);
+    public SlotIronFurnace(Player player, Container container, int index, int x, int y) {
+        super(container, index, x, y);
         this.player = player;
     }
 
-    public boolean canInsert(ItemStack stack) {
+    @Override
+    public boolean mayPlace(ItemStack stack) {
         return false;
     }
 
-    public ItemStack takeStack(int amount) {
-        if (this.hasStack()) {
-            this.amount += Math.min(amount, this.getStack().getCount());
+    @Override
+    public ItemStack remove(int amount) {
+        if (this.hasItem()) {
+            this.amount += Math.min(amount, this.getItem().getCount());
         }
 
-        return super.takeStack(amount);
+        return super.remove(amount);
     }
 
-    public void onTakeItem(PlayerEntity player, ItemStack stack) {
-        this.onCrafted(stack);
-        super.onTakeItem(player, stack);
+    @Override
+    public void onTake(Player player, ItemStack stack) {
+        this.checkTakeAchievements(stack);
+        super.onTake(player, stack);
     }
 
-    protected void onCrafted(ItemStack stack, int amount) {
-        this.amount += amount;
-        this.onCrafted(stack);
-    }
-
-    protected void onCrafted(ItemStack stack) {
-        stack.onCraft(this.player.world, this.player, this.amount);
-        if (!this.player.world.isClient && this.inventory instanceof BlockIronFurnaceTileBase) {
-            ((BlockIronFurnaceTileBase)this.inventory).dropExperience(this.player);
+    @Override
+    protected void checkTakeAchievements(ItemStack stack) {
+        stack.onCrafted(this.amount);
+        if (!this.player.level().isClientSide() && this.container instanceof BlockIronFurnaceTileBase) {
+            ((BlockIronFurnaceTileBase)this.container).grantExperience(this.player.level(), this.player.position());
         }
 
         this.amount = 0;

@@ -3,11 +3,11 @@ package ironfurnaces.tileentity;
 import ironfurnaces.config.IronFurnacesConfig;
 import ironfurnaces.container.BlockIronFurnaceScreenHandler;
 import ironfurnaces.init.Reference;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.core.BlockPos;
 
 public class BlockIronFurnaceTile extends BlockIronFurnaceTileBase {
     public BlockIronFurnaceTile(BlockPos pos, BlockState state) {
@@ -20,12 +20,12 @@ public class BlockIronFurnaceTile extends BlockIronFurnaceTileBase {
     }
 
     @Override
-    public String IgetName() {
+    public String getContainerName() {
         return "container.ironfurnaces.iron_furnace";
     }
 
     @Override
-    public ScreenHandler IcreateMenu(int i, PlayerInventory playerInventory, PlayerEntity playerEntity) {
+    public AbstractContainerMenu createMenu(int i, net.minecraft.world.entity.player.Inventory playerInventory, Player playerEntity) {
         return new BlockIronFurnaceScreenHandler(i, playerInventory, this, this.propertyDelegate);
     }
 
