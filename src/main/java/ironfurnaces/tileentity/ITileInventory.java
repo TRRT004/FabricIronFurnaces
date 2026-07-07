@@ -7,14 +7,15 @@ import net.minecraft.core.Direction;
 
 public interface ITileInventory {
 
-    public int[] getSlotsForFace(Direction side);
+	public int[] getSlotsForFace(Direction side);
 
-    public boolean canExtractItem(int index, ItemStack stack, Direction direction);
+	public boolean canExtractItem(int index, ItemStack stack, Direction direction);
 
-    public String getContainerName();
+	public String getContainerName();
 
-    public boolean isItemValidForSlot(int index, ItemStack stack);
+	public boolean isItemValidForSlot(int index, ItemStack stack);
 
-    public AbstractContainerMenu createMenu(int i, net.minecraft.world.entity.player.Inventory playerInventory, Player playerEntity);
+	public AbstractContainerMenu createMenu(int i, net.minecraft.world.entity.player.Inventory playerInventory,
+			Player playerEntity);
 
 }

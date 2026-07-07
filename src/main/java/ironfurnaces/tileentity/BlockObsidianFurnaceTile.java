@@ -9,23 +9,24 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.core.BlockPos;
 
 public class BlockObsidianFurnaceTile extends BlockIronFurnaceTileBase {
-    public BlockObsidianFurnaceTile(BlockPos pos, BlockState state) {
-        super(Reference.OBSIDIAN_FURNACE_TILE, pos, state);
-    }
+	public BlockObsidianFurnaceTile(BlockPos pos, BlockState state) {
+		super(Reference.OBSIDIAN_FURNACE_TILE, pos, state);
+	}
 
-    @Override
-    protected int getCookTimeConfig() {
-        return IronFurnacesConfig.obsidianFurnaceSpeed;
-    }
+	@Override
+	protected int getCookTimeConfig() {
+		return IronFurnacesConfig.obsidianFurnaceSpeed;
+	}
 
-    @Override
-    public String getContainerName() {
-        return "container.ironfurnaces.obsidian_furnace";
-    }
+	@Override
+	public String getContainerName() {
+		return "container.ironfurnaces.obsidian_furnace";
+	}
 
-    @Override
-    public AbstractContainerMenu createMenu(int i, net.minecraft.world.entity.player.Inventory playerInventory, Player playerEntity) {
-        return new BlockObsidianFurnaceScreenHandler(i, playerInventory, this, this.propertyDelegate);
-    }
+	@Override
+	public AbstractContainerMenu createMenu(int i, net.minecraft.world.entity.player.Inventory playerInventory,
+			Player playerEntity) {
+		return new BlockObsidianFurnaceScreenHandler(i, playerInventory, this, this.propertyDelegate);
+	}
 
 }

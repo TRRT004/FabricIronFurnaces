@@ -14,33 +14,45 @@ import net.minecraft.ChatFormatting;
 
 public class ItemHeater extends Item {
 
+	public ItemHeater() {
+		super(new Item.Properties()
+				.setId(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.ITEM,
+						net.minecraft.resources.Identifier.fromNamespaceAndPath(Reference.MOD_ID, "item_heater"))));
+	}
 
-    public ItemHeater() {
-        super(new Item.Properties().setId(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.ITEM, net.minecraft.resources.Identifier.fromNamespaceAndPath(Reference.MOD_ID, "item_heater"))));
-    }
+	@Environment(EnvType.CLIENT)
+	@Override
+	// Overriding appendHoverText is deprecated in Minecraft, but it remains the
+	// standard method to dynamically populate item tooltips.
+	public void appendHoverText(ItemStack stack, Item.TooltipContext context,
+			net.minecraft.world.item.component.TooltipDisplay display, java.util.function.Consumer<Component> tooltip,
+			net.minecraft.world.item.TooltipFlag flag) {
+		if (StringHelper.isShiftKeyDown()) {
+			if (stack.has(net.minecraft.core.component.DataComponents.CUSTOM_DATA)) {
+				net.minecraft.nbt.CompoundTag nbtTag = stack
+						.get(net.minecraft.core.component.DataComponents.CUSTOM_DATA).copyTag();
+				tooltip.accept(Component.translatable("tooltip." + Reference.MOD_ID + ".heater")
+						.withStyle(ChatFormatting.GRAY));
+				tooltip.accept(Component.translatable("tooltip." + Reference.MOD_ID + ".heaterX")
+						.withStyle(ChatFormatting.GRAY)
+						.append(Component.literal("" + nbtTag.getInt("X").orElse(0)).withStyle(ChatFormatting.GRAY)));
+				tooltip.accept(Component.translatable("tooltip." + Reference.MOD_ID + ".heaterY")
+						.withStyle(ChatFormatting.GRAY)
+						.append(Component.literal("" + nbtTag.getInt("Y").orElse(0)).withStyle(ChatFormatting.GRAY)));
+				tooltip.accept(Component.translatable("tooltip." + Reference.MOD_ID + ".heaterZ")
+						.withStyle(ChatFormatting.GRAY)
+						.append(Component.literal("" + nbtTag.getInt("Z").orElse(0)).withStyle(ChatFormatting.GRAY)));
+			} else {
+				tooltip.accept(Component.translatable("tooltip." + Reference.MOD_ID + ".heater_not_bound")
+						.withStyle(ChatFormatting.GRAY));
+				tooltip.accept(Component.translatable("tooltip." + Reference.MOD_ID + ".heater_tip")
+						.withStyle(ChatFormatting.GRAY));
+				tooltip.accept(Component.translatable("tooltip." + Reference.MOD_ID + ".heater_tip1")
+						.withStyle(ChatFormatting.GRAY));
+			}
+		} else {
+			tooltip.accept(StringHelper.getShiftInfoText());
+		}
 
-    @Environment(EnvType.CLIENT)
-    @Override
-    // Overriding appendHoverText is deprecated in Minecraft, but it remains the standard method to dynamically populate item tooltips.
-    public void appendHoverText(ItemStack stack, Item.TooltipContext context, net.minecraft.world.item.component.TooltipDisplay display, java.util.function.Consumer<Component> tooltip, net.minecraft.world.item.TooltipFlag flag) {
-        if (StringHelper.isShiftKeyDown())
-        {
-            if (stack.has(net.minecraft.core.component.DataComponents.CUSTOM_DATA)) {
-                net.minecraft.nbt.CompoundTag nbtTag = stack.get(net.minecraft.core.component.DataComponents.CUSTOM_DATA).copyTag();
-                tooltip.accept(Component.translatable("tooltip." + Reference.MOD_ID + ".heater").withStyle(ChatFormatting.GRAY));
-                tooltip.accept(Component.translatable("tooltip." + Reference.MOD_ID + ".heaterX").withStyle(ChatFormatting.GRAY).append(Component.literal("" + nbtTag.getInt("X").orElse(0)).withStyle(ChatFormatting.GRAY)));
-                tooltip.accept(Component.translatable("tooltip." + Reference.MOD_ID + ".heaterY").withStyle(ChatFormatting.GRAY).append(Component.literal("" + nbtTag.getInt("Y").orElse(0)).withStyle(ChatFormatting.GRAY)));
-                tooltip.accept(Component.translatable("tooltip." + Reference.MOD_ID + ".heaterZ").withStyle(ChatFormatting.GRAY).append(Component.literal("" + nbtTag.getInt("Z").orElse(0)).withStyle(ChatFormatting.GRAY)));
-            } else {
-                tooltip.accept(Component.translatable("tooltip." + Reference.MOD_ID + ".heater_not_bound").withStyle(ChatFormatting.GRAY));
-                tooltip.accept(Component.translatable("tooltip." + Reference.MOD_ID + ".heater_tip").withStyle(ChatFormatting.GRAY));
-                tooltip.accept(Component.translatable("tooltip." + Reference.MOD_ID + ".heater_tip1").withStyle(ChatFormatting.GRAY));
-            }
-        }
-        else
-        {
-            tooltip.accept(StringHelper.getShiftInfoText());
-        }
-
-    }
+	}
 }

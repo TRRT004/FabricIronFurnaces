@@ -12,16 +12,20 @@ import net.minecraft.world.item.Item;
 
 public class ItemAugmentFuel extends ItemAugment {
 
-    public ItemAugmentFuel() {
-        super("augment_fuel");
-    }
+	public ItemAugmentFuel() {
+		super("augment_fuel");
+	}
 
-    @Environment(EnvType.CLIENT)
-    @Override
-    public void appendHoverText(ItemStack stack, Item.TooltipContext context, net.minecraft.world.item.component.TooltipDisplay display, java.util.function.Consumer<Component> tooltip, net.minecraft.world.item.TooltipFlag flag) {
-        super.appendHoverText(stack, context, display, tooltip, flag);
-        tooltip.accept(Component.translatable("tooltip." + Reference.MOD_ID + ".augment_fuel_pro").withStyle(ChatFormatting.GREEN));
-        tooltip.accept(Component.translatable("tooltip." + Reference.MOD_ID + ".augment_fuel_con").withStyle(ChatFormatting.DARK_RED));
+	@Environment(EnvType.CLIENT)
+	@Override
+	public void appendHoverText(ItemStack stack, Item.TooltipContext context,
+			net.minecraft.world.item.component.TooltipDisplay display, java.util.function.Consumer<Component> tooltip,
+			net.minecraft.world.item.TooltipFlag flag) {
+		super.appendHoverText(stack, context, display, tooltip, flag);
+		tooltip.accept(Component.translatable("tooltip." + Reference.MOD_ID + ".augment_fuel_pro")
+				.withStyle(ChatFormatting.GREEN));
+		tooltip.accept(Component.translatable("tooltip." + Reference.MOD_ID + ".augment_fuel_con")
+				.withStyle(ChatFormatting.DARK_RED));
 
-    }
+	}
 }

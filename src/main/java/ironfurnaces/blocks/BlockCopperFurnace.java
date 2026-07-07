@@ -15,22 +15,23 @@ import org.jetbrains.annotations.Nullable;
 
 public class BlockCopperFurnace extends BlockIronFurnaceBase {
 
-    public static final String COPPER_FURNACE = "copper_furnace";
+	public static final String COPPER_FURNACE = "copper_furnace";
 
-    public BlockCopperFurnace() {
-        super(BlockBehaviour.Properties.ofFullCopy(Blocks.GOLD_BLOCK).setId(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.BLOCK, net.minecraft.resources.Identifier.fromNamespaceAndPath(Reference.MOD_ID, COPPER_FURNACE))));
-    }
+	public BlockCopperFurnace() {
+		super(BlockBehaviour.Properties.ofFullCopy(Blocks.GOLD_BLOCK)
+				.setId(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.BLOCK,
+						net.minecraft.resources.Identifier.fromNamespaceAndPath(Reference.MOD_ID, COPPER_FURNACE))));
+	}
 
+	@Nullable
+	@Override
+	public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level world, BlockState state,
+			BlockEntityType<T> type) {
+		return checkType(world, type, Reference.COPPER_FURNACE_TILE);
+	}
 
-    @Nullable
-    @Override
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level world, BlockState state, BlockEntityType<T> type) {
-        return checkType(world, type, Reference.COPPER_FURNACE_TILE);
-    }
-
-
-    @Override
-    public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new BlockCopperFurnaceTile(pos, state);
-    }
+	@Override
+	public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+		return new BlockCopperFurnaceTile(pos, state);
+	}
 }

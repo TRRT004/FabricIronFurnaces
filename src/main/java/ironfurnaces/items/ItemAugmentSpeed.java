@@ -12,16 +12,20 @@ import net.minecraft.world.item.Item;
 
 public class ItemAugmentSpeed extends ItemAugment {
 
-    public ItemAugmentSpeed() {
-        super("augment_speed");
-    }
+	public ItemAugmentSpeed() {
+		super("augment_speed");
+	}
 
-    @Environment(EnvType.CLIENT)
-    @Override
-    public void appendHoverText(ItemStack stack, Item.TooltipContext context, net.minecraft.world.item.component.TooltipDisplay display, java.util.function.Consumer<Component> tooltip, net.minecraft.world.item.TooltipFlag flag) {
-        super.appendHoverText(stack, context, display, tooltip, flag);
-        tooltip.accept(Component.translatable("tooltip." + Reference.MOD_ID + ".augment_speed_pro").withStyle(ChatFormatting.GREEN));
-        tooltip.accept(Component.translatable("tooltip." + Reference.MOD_ID + ".augment_speed_con").withStyle(ChatFormatting.DARK_RED));
+	@Environment(EnvType.CLIENT)
+	@Override
+	public void appendHoverText(ItemStack stack, Item.TooltipContext context,
+			net.minecraft.world.item.component.TooltipDisplay display, java.util.function.Consumer<Component> tooltip,
+			net.minecraft.world.item.TooltipFlag flag) {
+		super.appendHoverText(stack, context, display, tooltip, flag);
+		tooltip.accept(Component.translatable("tooltip." + Reference.MOD_ID + ".augment_speed_pro")
+				.withStyle(ChatFormatting.GREEN));
+		tooltip.accept(Component.translatable("tooltip." + Reference.MOD_ID + ".augment_speed_con")
+				.withStyle(ChatFormatting.DARK_RED));
 
-    }
+	}
 }

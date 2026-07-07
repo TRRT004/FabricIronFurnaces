@@ -12,18 +12,20 @@ import net.minecraft.ChatFormatting;
 
 public class ItemXmas extends Item {
 
+	public ItemXmas(Item.Properties properties) {
+		super(properties);
+	}
 
-    public ItemXmas(Item.Properties properties) {
-        super(properties);
-    }
-
-
-    @Environment(EnvType.CLIENT)
-    @Override
-    // Overriding appendHoverText is deprecated in Minecraft, but it remains the standard method to dynamically populate item tooltips.
-    public void appendHoverText(ItemStack stack, Item.TooltipContext context, net.minecraft.world.item.component.TooltipDisplay display, java.util.function.Consumer<Component> tooltip, net.minecraft.world.item.TooltipFlag flag) {
-        tooltip.accept(Component.translatable("tooltip." + Reference.MOD_ID + ".xmas_right_click").withStyle(ChatFormatting.GRAY));
-        tooltip.accept(Component.translatable("tooltip." + Reference.MOD_ID + ".xmas1").withStyle(ChatFormatting.GRAY));
-        tooltip.accept(Component.translatable("tooltip." + Reference.MOD_ID + ".xmas2").withStyle(ChatFormatting.GRAY));
-    }
+	@Environment(EnvType.CLIENT)
+	@Override
+	// Overriding appendHoverText is deprecated in Minecraft, but it remains the
+	// standard method to dynamically populate item tooltips.
+	public void appendHoverText(ItemStack stack, Item.TooltipContext context,
+			net.minecraft.world.item.component.TooltipDisplay display, java.util.function.Consumer<Component> tooltip,
+			net.minecraft.world.item.TooltipFlag flag) {
+		tooltip.accept(Component.translatable("tooltip." + Reference.MOD_ID + ".xmas_right_click")
+				.withStyle(ChatFormatting.GRAY));
+		tooltip.accept(Component.translatable("tooltip." + Reference.MOD_ID + ".xmas1").withStyle(ChatFormatting.GRAY));
+		tooltip.accept(Component.translatable("tooltip." + Reference.MOD_ID + ".xmas2").withStyle(ChatFormatting.GRAY));
+	}
 }

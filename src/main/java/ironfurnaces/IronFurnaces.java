@@ -11,25 +11,26 @@ import net.minecraft.core.BlockPos;
 
 public class IronFurnaces implements ModInitializer {
 
-    @Override
-    public void onInitialize() {
-        Reference.init();
+	@Override
+	public void onInitialize() {
+		Reference.init();
 
-        PayloadTypeRegistry.serverboundPlay().register(FurnaceSettingsPayload.TYPE, FurnaceSettingsPayload.CODEC);
+		PayloadTypeRegistry.serverboundPlay().register(FurnaceSettingsPayload.TYPE, FurnaceSettingsPayload.CODEC);
 
-        ServerPlayNetworking.registerGlobalReceiver(FurnaceSettingsPayload.TYPE, (payload, context) -> {
-            ((net.minecraft.server.level.ServerLevel) context.player().level()).getServer().execute(() -> {
-                BlockPos pos = payload.pos();
-                int index = payload.index();
-                int set = payload.set();
-                BlockEntity tee = context.player().level().getBlockEntity(pos);
-                if (tee != null && tee instanceof BlockIronFurnaceTileBase) {
-                    BlockIronFurnaceTileBase te = (BlockIronFurnaceTileBase) tee;
+		ServerPlayNetworking.registerGlobalReceiver(FurnaceSettingsPayload.TYPE, (payload, context) -> {
+			((net.minecraft.server.level.ServerLevel) context.player().level()).getServer().execute(() -> {
+				BlockPos pos = payload.pos();
+				int index = payload.index();
+				int set = payload.set();
+				BlockEntity tee = context.player().level().getBlockEntity(pos);
+				if (tee != null && tee instanceof BlockIronFurnaceTileBase) {
+					BlockIronFurnaceTileBase te = (BlockIronFurnaceTileBase) tee;
 
-                    te.furnaceSettings.set(index, set);
-                    te.getLevel().sendBlockUpdated(pos, te.getLevel().getBlockState(pos), te.getLevel().getBlockState(pos), 2);
-                }
-            });
-        });
-    }
+					te.furnaceSettings.set(index, set);
+					te.getLevel().sendBlockUpdated(pos, te.getLevel().getBlockState(pos),
+							te.getLevel().getBlockState(pos), 2);
+				}
+			});
+		});
+	}
 }

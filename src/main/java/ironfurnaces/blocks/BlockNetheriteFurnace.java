@@ -24,42 +24,45 @@ import net.minecraft.util.RandomSource;
 
 public class BlockNetheriteFurnace extends BlockIronFurnaceBase {
 
-    public static final String NETHERITE_FURNACE = "netherite_furnace";
+	public static final String NETHERITE_FURNACE = "netherite_furnace";
 
-    public BlockNetheriteFurnace() {
-        super(BlockBehaviour.Properties.ofFullCopy(Blocks.NETHERITE_BLOCK).destroyTime(50.0F).explosionResistance(6000.0F).setId(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.BLOCK, net.minecraft.resources.Identifier.fromNamespaceAndPath(Reference.MOD_ID, NETHERITE_FURNACE))));
-    }
+	public BlockNetheriteFurnace() {
+		super(BlockBehaviour.Properties.ofFullCopy(Blocks.NETHERITE_BLOCK).destroyTime(50.0F)
+				.explosionResistance(6000.0F)
+				.setId(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.BLOCK,
+						net.minecraft.resources.Identifier.fromNamespaceAndPath(Reference.MOD_ID, NETHERITE_FURNACE))));
+	}
 
-    @Environment(EnvType.CLIENT)
-    @Override
-    public void animateTick(BlockState state, Level world, BlockPos pos, RandomSource random) {
-        if ((Boolean)state.getValue(BlockStateProperties.LIT)) {
-            double d = (double)pos.getX() + 0.5D;
-            double e = (double)pos.getY();
-            double f = (double)pos.getZ() + 0.5D;
-            if (random.nextDouble() < 0.1D) {
-                world.playLocalSound(d, e, f, SoundEvents.FURNACE_FIRE_CRACKLE, SoundSource.BLOCKS, 1.0F, 1.0F, false);
-            }
+	@Environment(EnvType.CLIENT)
+	@Override
+	public void animateTick(BlockState state, Level world, BlockPos pos, RandomSource random) {
+		if ((Boolean) state.getValue(BlockStateProperties.LIT)) {
+			double d = (double) pos.getX() + 0.5D;
+			double e = (double) pos.getY();
+			double f = (double) pos.getZ() + 0.5D;
+			if (random.nextDouble() < 0.1D) {
+				world.playLocalSound(d, e, f, SoundEvents.FURNACE_FIRE_CRACKLE, SoundSource.BLOCKS, 1.0F, 1.0F, false);
+			}
 
-            Direction direction = (Direction)state.getValue(BlockStateProperties.HORIZONTAL_FACING);
-            Direction.Axis axis = direction.getAxis();
-            double h = random.nextDouble() * 0.6D - 0.3D;
-            double i = axis == Direction.Axis.X ? (double)direction.getStepX() * 0.52D : h;
-            double j = random.nextDouble() * 6.0D / 16.0D;
-            double k = axis == Direction.Axis.Z ? (double)direction.getStepZ() * 0.52D : h;
-            world.addParticle(ParticleTypes.SMOKE, d + i, e + j, f + k, 0.0D, 0.0D, 0.0D);
-            world.addParticle(ParticleTypes.SOUL_FIRE_FLAME, d + i, e + j, f + k, 0.0D, 0.0D, 0.0D);
-        }
-    }
-    @Nullable
-    @Override
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level world, BlockState state, BlockEntityType<T> type) {
-        return checkType(world, type, Reference.NETHERITE_FURNACE_TILE);
-    }
+			Direction direction = (Direction) state.getValue(BlockStateProperties.HORIZONTAL_FACING);
+			Direction.Axis axis = direction.getAxis();
+			double h = random.nextDouble() * 0.6D - 0.3D;
+			double i = axis == Direction.Axis.X ? (double) direction.getStepX() * 0.52D : h;
+			double j = random.nextDouble() * 6.0D / 16.0D;
+			double k = axis == Direction.Axis.Z ? (double) direction.getStepZ() * 0.52D : h;
+			world.addParticle(ParticleTypes.SMOKE, d + i, e + j, f + k, 0.0D, 0.0D, 0.0D);
+			world.addParticle(ParticleTypes.SOUL_FIRE_FLAME, d + i, e + j, f + k, 0.0D, 0.0D, 0.0D);
+		}
+	}
+	@Nullable
+	@Override
+	public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level world, BlockState state,
+			BlockEntityType<T> type) {
+		return checkType(world, type, Reference.NETHERITE_FURNACE_TILE);
+	}
 
-
-    @Override
-    public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new BlockNetheriteFurnaceTile(pos, state);
-    }
+	@Override
+	public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+		return new BlockNetheriteFurnaceTile(pos, state);
+	}
 }

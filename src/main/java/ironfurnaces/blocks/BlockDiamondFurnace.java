@@ -15,21 +15,23 @@ import org.jetbrains.annotations.Nullable;
 
 public class BlockDiamondFurnace extends BlockIronFurnaceBase {
 
-    public static final String DIAMOND_FURNACE = "diamond_furnace";
+	public static final String DIAMOND_FURNACE = "diamond_furnace";
 
-    public BlockDiamondFurnace() {
-        super(BlockBehaviour.Properties.ofFullCopy(Blocks.DIAMOND_BLOCK).setId(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.BLOCK, net.minecraft.resources.Identifier.fromNamespaceAndPath(Reference.MOD_ID, DIAMOND_FURNACE))));
-    }
+	public BlockDiamondFurnace() {
+		super(BlockBehaviour.Properties.ofFullCopy(Blocks.DIAMOND_BLOCK)
+				.setId(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.BLOCK,
+						net.minecraft.resources.Identifier.fromNamespaceAndPath(Reference.MOD_ID, DIAMOND_FURNACE))));
+	}
 
-    @Nullable
-    @Override
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level world, BlockState state, BlockEntityType<T> type) {
-        return checkType(world, type, Reference.DIAMOND_FURNACE_TILE);
-    }
+	@Nullable
+	@Override
+	public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level world, BlockState state,
+			BlockEntityType<T> type) {
+		return checkType(world, type, Reference.DIAMOND_FURNACE_TILE);
+	}
 
-
-    @Override
-    public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new BlockDiamondFurnaceTile(pos, state);
-    }
+	@Override
+	public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+		return new BlockDiamondFurnaceTile(pos, state);
+	}
 }

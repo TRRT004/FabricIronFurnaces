@@ -10,15 +10,19 @@ import net.minecraft.network.chat.Component;
 
 public class ItemAugment extends Item {
 
+	public ItemAugment(String name) {
+		super(new Item.Properties()
+				.setId(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.ITEM,
+						net.minecraft.resources.Identifier.fromNamespaceAndPath(Reference.MOD_ID, name))));
+	}
 
-    public ItemAugment(String name) {
-        super(new Item.Properties().setId(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.ITEM, net.minecraft.resources.Identifier.fromNamespaceAndPath(Reference.MOD_ID, name))));
-    }
+	@Environment(EnvType.CLIENT)
+	@Override
+	// Overriding appendHoverText is deprecated in Minecraft, but it remains the
+	// standard method to dynamically populate item tooltips.
+	public void appendHoverText(ItemStack stack, Item.TooltipContext context,
+			net.minecraft.world.item.component.TooltipDisplay display, java.util.function.Consumer<Component> tooltip,
+			net.minecraft.world.item.TooltipFlag flag) {
 
-    @Environment(EnvType.CLIENT)
-    @Override
-    // Overriding appendHoverText is deprecated in Minecraft, but it remains the standard method to dynamically populate item tooltips.
-    public void appendHoverText(ItemStack stack, Item.TooltipContext context, net.minecraft.world.item.component.TooltipDisplay display, java.util.function.Consumer<Component> tooltip, net.minecraft.world.item.TooltipFlag flag) {
-
-    }
+	}
 }
