@@ -4,16 +4,13 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.Nameable;
-import net.minecraft.world.Clearable;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -21,7 +18,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import java.util.Optional;
 
-public abstract class TileEntityInventory extends BlockEntity implements ITileInventory, WorldlyContainer, MenuProvider, Nameable, Clearable {
+public abstract class TileEntityInventory extends BlockEntity implements ITileInventory, WorldlyContainer, MenuProvider, Nameable {
     protected NonNullList<ItemStack> inventory;
     protected Component name;
 
@@ -100,8 +97,6 @@ public abstract class TileEntityInventory extends BlockEntity implements ITileIn
 
     @Override
     public void setItem(int slot, ItemStack stack) {
-        ItemStack itemStack = (ItemStack)this.inventory.get(slot);
-        boolean bl = !stack.isEmpty() && ItemStack.isSameItemSameComponents(stack, itemStack);
         this.inventory.set(slot, stack);
         if (stack.getCount() > this.getMaxStackSize()) {
             stack.setCount(this.getMaxStackSize());

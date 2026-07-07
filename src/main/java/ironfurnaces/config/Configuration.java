@@ -43,17 +43,17 @@ public class Configuration {
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
-    private final Class clazz;
+    private final Class<?> clazz;
     private final String modId;
 
-    public Configuration(Class clazz, String modId) {
+    public Configuration(Class<?> clazz, String modId) {
         this.clazz = clazz;
         this.modId = modId;
         setup();
     }
 
     private void setup() {
-        final File configDir = new File(FabricLoader.getInstance().getConfigDirectory(), modId);
+        final File configDir = FabricLoader.getInstance().getConfigDir().resolve(modId).toFile();
 
         if (!configDir.exists()) {
             configDir.mkdirs();

@@ -10,35 +10,23 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 
-
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
-import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.world.level.block.ChestBlock;
-import net.minecraft.world.level.block.entity.ChestBlockEntity;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.WorldlyContainerHolder;
 
-
-
-
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.Container;
 import net.minecraft.world.WorldlyContainer;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.server.level.ServerPlayer;
@@ -55,10 +43,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.inventory.StackedContentsCompatible;
-import net.minecraft.world.entity.player.StackedItemContents;
-import net.minecraft.world.MenuProvider;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.network.protocol.Packet;
@@ -141,7 +126,7 @@ public abstract class BlockIronFurnaceTileBase extends TileEntityInventory imple
                 return 4;
             }
         };
-        this.recipesUsed = new Object2IntOpenHashMap();
+        this.recipesUsed = new Object2IntOpenHashMap<>();
         this.recipeType = RecipeType.SMELTING;
     }
 
@@ -722,6 +707,7 @@ public abstract class BlockIronFurnaceTileBase extends TileEntityInventory imple
         return this.furnaceBurnTime > 0;
     }
 
+    @SuppressWarnings("unchecked")
     private boolean canSmelt(RecipeHolder<?> recipe) {
         if (!this.inventory.get(0).isEmpty() && recipe != null) {
             ItemStack itemstack = ((net.minecraft.world.item.crafting.Recipe<net.minecraft.world.item.crafting.SingleRecipeInput>) recipe.value()).assemble(new net.minecraft.world.item.crafting.SingleRecipeInput(this.getItem(0)));
@@ -744,6 +730,7 @@ public abstract class BlockIronFurnaceTileBase extends TileEntityInventory imple
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void smeltItem(RecipeHolder<?> recipe) {
         timer = 0;
         if (recipe != null && this.canSmelt(recipe)) {
@@ -778,7 +765,7 @@ public abstract class BlockIronFurnaceTileBase extends TileEntityInventory imple
         Optional<CompoundTag> recipesUsedTag = input.read("RecipesUsed", CompoundTag.CODEC);
         recipesUsedTag.ifPresent(compound -> {
             for (String string : compound.keySet()) {
-                this.recipesUsed.put(Identifier.tryParse(string), compound.getInt(string).orElse(0));
+                this.recipesUsed.put(Identifier.tryParse(string), (int) compound.getInt(string).orElse(0));
             }
         });
 
@@ -918,16 +905,16 @@ public abstract class BlockIronFurnaceTileBase extends TileEntityInventory imple
 
     public void awardUsedRecipes(Player player, List<ItemStack> items) {
         List<RecipeHolder<?>> list = this.grantExperience(player.level(), player.position());
-        player.awardRecipes((Collection) list);
+        player.awardRecipes(list);
         this.recipesUsed.clear();
     }
 
     public List<RecipeHolder<?>> grantExperience(Level world, Vec3 vec3d) {
         List<RecipeHolder<?>> list = Lists.newArrayList();
-        ObjectIterator var4 = this.recipesUsed.object2IntEntrySet().iterator();
+        ObjectIterator<Object2IntMap.Entry<Identifier>> var4 = this.recipesUsed.object2IntEntrySet().iterator();
 
         while (var4.hasNext()) {
-            Object2IntMap.Entry<Identifier> entry = (Object2IntMap.Entry) var4.next();
+            Object2IntMap.Entry<Identifier> entry = var4.next();
             world.getServer().getRecipeManager().byKey(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.RECIPE, entry.getKey())).ifPresent((recipe) -> {
                 list.add(recipe);
                 dropExperience(world, vec3d, entry.getIntValue(), ((AbstractCookingRecipe) recipe.value()).experience());

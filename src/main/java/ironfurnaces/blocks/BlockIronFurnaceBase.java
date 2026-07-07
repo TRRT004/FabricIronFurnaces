@@ -35,11 +35,9 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.Containers;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.util.RandomSource;
@@ -47,10 +45,6 @@ import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.Mirror;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Random;
-import java.util.List;
-import net.minecraft.world.item.crafting.RecipeHolder;
-import java.util.Collection;
 import java.util.function.ToIntFunction;
 
 public abstract class BlockIronFurnaceBase extends Block implements EntityBlock {
@@ -68,6 +62,7 @@ public abstract class BlockIronFurnaceBase extends Block implements EntityBlock 
     }
 
     @Nullable
+    @SuppressWarnings("unchecked")
     protected static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> checkType(BlockEntityType<A> givenType, BlockEntityType<E> expectedType, BlockEntityTicker<? super E> ticker) {
         return expectedType == givenType ? (BlockEntityTicker<A>) ticker : null;
     }
@@ -262,7 +257,6 @@ public abstract class BlockIronFurnaceBase extends Block implements EntityBlock 
 
             Direction direction = (Direction)state.getValue(BlockStateProperties.HORIZONTAL_FACING);
             Direction.Axis axis = direction.getAxis();
-            double g = 0.52D;
             double h = random.nextDouble() * 0.6D - 0.3D;
             double i = axis == Direction.Axis.X ? (double)direction.getStepX() * 0.52D : h;
             double j = random.nextDouble() * 6.0D / 16.0D;
