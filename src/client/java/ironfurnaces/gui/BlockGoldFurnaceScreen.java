@@ -1,11 +1,7 @@
 package ironfurnaces.gui;
 
 import ironfurnaces.container.BlockGoldFurnaceScreenHandler;
-import ironfurnaces.container.BlockIronFurnaceScreenHandler;
 import ironfurnaces.init.Reference;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 

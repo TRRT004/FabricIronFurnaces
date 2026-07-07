@@ -1,8 +1,6 @@
 package ironfurnaces.container;
 
 import ironfurnaces.init.Reference;
-import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.Container;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.inventory.ContainerData;
 

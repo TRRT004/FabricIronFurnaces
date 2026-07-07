@@ -4,7 +4,6 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import ironfurnaces.init.Reference;
 import ironfurnaces.tileentity.BlockCopperFurnaceTile;
 
-import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -14,7 +13,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
-public class BlockCopperFurnace extends BlockIronFurnaceBase implements EntityBlock {
+public class BlockCopperFurnace extends BlockIronFurnaceBase {
 
     public static final String COPPER_FURNACE = "copper_furnace";
 

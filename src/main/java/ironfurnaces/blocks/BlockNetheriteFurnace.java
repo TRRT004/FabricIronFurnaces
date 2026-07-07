@@ -2,7 +2,6 @@ package ironfurnaces.blocks;
 
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import ironfurnaces.init.Reference;
-import ironfurnaces.tileentity.BlockIronFurnaceTile;
 import ironfurnaces.tileentity.BlockNetheriteFurnaceTile;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -18,7 +17,6 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
@@ -45,7 +43,6 @@ public class BlockNetheriteFurnace extends BlockIronFurnaceBase {
 
             Direction direction = (Direction)state.getValue(BlockStateProperties.HORIZONTAL_FACING);
             Direction.Axis axis = direction.getAxis();
-            double g = 0.52D;
             double h = random.nextDouble() * 0.6D - 0.3D;
             double i = axis == Direction.Axis.X ? (double)direction.getStepX() * 0.52D : h;
             double j = random.nextDouble() * 6.0D / 16.0D;

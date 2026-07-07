@@ -4,9 +4,7 @@ import ironfurnaces.container.BlockWirelessHeaterScreenHandler;
 import ironfurnaces.init.Reference;
 import ironfurnaces.tileentity.BlockWirelessHeaterTile;
 import ironfurnaces.util.StringHelper;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 
 import net.minecraft.network.chat.Component;
@@ -65,10 +63,10 @@ public class BlockWirelessHeaterScreen extends AbstractContainerScreen<BlockWire
     public void extractContents(net.minecraft.client.gui.GuiGraphicsExtractor extractor, int mouseX, int mouseY, float partialTick) {
         int i = (this.width - this.imageWidth) / 2;
         int j = (this.height - this.imageHeight) / 2;
-        this.blit(extractor, this.GUI, i, j, this.imageWidth, this.imageHeight, 0.0F, 0.0F, (float)this.imageWidth, (float)this.imageHeight);
+        this.blit(extractor, BlockWirelessHeaterScreen.GUI, i, j, this.imageWidth, this.imageHeight, 0.0F, 0.0F, (float)this.imageWidth, (float)this.imageHeight);
         int k;
         k = this.getEnergyScaled(46);
-        this.blit(extractor, this.GUI, i + 65, j + 64, k + 1, 12, 176.0F, 0.0F, (float)(k + 1), 12.0F);
+        this.blit(extractor, BlockWirelessHeaterScreen.GUI, i + 65, j + 64, k + 1, 12, 176.0F, 0.0F, (float)(k + 1), 12.0F);
     }
 
     public int getEnergyScaled(int pixels) {

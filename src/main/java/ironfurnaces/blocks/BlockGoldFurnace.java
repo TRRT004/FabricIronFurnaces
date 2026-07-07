@@ -2,20 +2,14 @@ package ironfurnaces.blocks;
 
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import ironfurnaces.init.Reference;
-import ironfurnaces.tileentity.BlockCrystalFurnaceTile;
 import ironfurnaces.tileentity.BlockGoldFurnaceTile;
-import ironfurnaces.tileentity.BlockIronFurnaceTileBase;
 
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 

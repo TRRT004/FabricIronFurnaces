@@ -2,7 +2,6 @@ package ironfurnaces.gui;
 
 import ironfurnaces.container.BlockCopperFurnaceScreenHandler;
 import ironfurnaces.init.Reference;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 
