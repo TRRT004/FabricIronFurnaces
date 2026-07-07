@@ -16,10 +16,10 @@
       "item": "minecraft:redstone"
     },
     "X": {
-      "item": "minecraft:coal"
+       "item": "minecraft:blast_furnace"
     }
   },
   "result": {
-    "item": "ironfurnaces:augment_fuel"
+    "item": "ironfurnaces_augments:augment_blasting"
   }
 }

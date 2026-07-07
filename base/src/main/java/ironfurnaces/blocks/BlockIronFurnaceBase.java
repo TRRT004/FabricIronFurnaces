@@ -179,8 +179,8 @@ public abstract class BlockIronFurnaceBase extends Block implements EntityBlock 
     private InteractionResult interactJovial(Level world, BlockPos pos, Player player, InteractionHand handIn, int jovial) {
         ItemStack stack = player.getItemInHand(handIn);
         if (!(stack.getItem() instanceof ItemSpooky
-                || !(stack.getItem() instanceof ItemXmas)
-                || !(stack.isEmpty()))) {
+                || stack.getItem() instanceof ItemXmas
+                || stack.isEmpty())) {
             return InteractionResult.SUCCESS;
         }
         BlockEntity te = world.getBlockEntity(pos);
@@ -188,6 +188,8 @@ public abstract class BlockIronFurnaceBase extends Block implements EntityBlock 
             return InteractionResult.SUCCESS;
         }
         ((BlockIronFurnaceTileBase)te).jovial = jovial;
+        te.setChanged();
+        ((BlockIronFurnaceTileBase)te).onUpdateSent();
         return InteractionResult.SUCCESS;
     }
 

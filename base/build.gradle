@@ -21,6 +21,14 @@ loom {
     }
 }
 
+sourceSets {
+    client {
+        resources {
+            srcDirs += [ 'src/main/resources' ]
+        }
+    }
+}
+
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
 

@@ -19,7 +19,7 @@ public class ItemAugmentFuel extends Item {
     @Environment(EnvType.CLIENT)
     @Override
     public void appendHoverText(ItemStack stack, Item.TooltipContext context, net.minecraft.world.item.component.TooltipDisplay display, java.util.function.Consumer<Component> tooltip, net.minecraft.world.item.TooltipFlag flag) {
-        tooltip.accept(Component.translatable("tooltip.ironfurnaces.augment_fuel_pro").withStyle(ChatFormatting.GREEN));
-        tooltip.accept(Component.translatable("tooltip.ironfurnaces.augment_fuel_con").withStyle(ChatFormatting.DARK_RED));
+        tooltip.accept(Component.translatable("tooltip.ironfurnaces_augments.augment_fuel_pro").withStyle(ChatFormatting.GREEN));
+        tooltip.accept(Component.translatable("tooltip.ironfurnaces_augments.augment_fuel_con").withStyle(ChatFormatting.DARK_RED));
     }
 }

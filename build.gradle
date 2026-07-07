@@ -25,6 +25,10 @@ subprojects {
         it.options.encoding = "UTF-8"
     }
 
+    tasks.withType(Jar).configureEach {
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    }
+
     processResources {
         inputs.property "version", project.version
 

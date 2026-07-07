@@ -19,7 +19,7 @@ public class ItemAugmentSmoking extends Item {
     @Environment(EnvType.CLIENT)
     @Override
     public void appendHoverText(ItemStack stack, Item.TooltipContext context, net.minecraft.world.item.component.TooltipDisplay display, java.util.function.Consumer<Component> tooltip, net.minecraft.world.item.TooltipFlag flag) {
-        tooltip.accept(Component.translatable("tooltip.ironfurnaces.augment_smoking_pro").withStyle(ChatFormatting.GREEN));
-        tooltip.accept(Component.translatable("tooltip.ironfurnaces.augment_smoking_con").withStyle(ChatFormatting.DARK_RED));
+        tooltip.accept(Component.translatable("tooltip.ironfurnaces_augments.augment_smoking_pro").withStyle(ChatFormatting.GREEN));
+        tooltip.accept(Component.translatable("tooltip.ironfurnaces_augments.augment_smoking_con").withStyle(ChatFormatting.DARK_RED));
     }
 }

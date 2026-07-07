@@ -16,10 +16,10 @@
       "item": "minecraft:redstone"
     },
     "X": {
-       "item": "minecraft:smoker"
+       "item": "minecraft:sugar"
     }
   },
   "result": {
-    "item": "ironfurnaces:augment_smoking"
+    "item": "ironfurnaces_augments:augment_speed"
   }
 }

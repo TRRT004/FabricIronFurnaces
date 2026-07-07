@@ -46,6 +46,7 @@ public abstract class BlockIronFurnaceScreenHandlerBase extends AbstractContaine
         checkContainerDataCount(propertyDelegate, 4);
         this.inventory = inventory;
         this.propertyDelegate = propertyDelegate;
+        this.world = playerInventory.player.level();
         this.addSlot(new Slot(inventory, 0, 56, 17));
         this.addSlot(new SlotIronFurnaceFuel(this, this.inventory, 1, 56, 53));
         this.addSlot(new SlotIronFurnace(playerInventory.player, this.inventory, 2, 116, 35));

@@ -1,0 +1,15 @@
+{
+  "item.ironfurnaces_augments.augment_blasting": "Augment: Blasting",
+  "item.ironfurnaces_augments.augment_smoking": "Augment: Smoking",
+  "item.ironfurnaces_augments.augment_speed": "Augment: Speed",
+  "item.ironfurnaces_augments.augment_fuel": "Augment: Fuel Efficiency",
+
+  "tooltip.ironfurnaces_augments.augment_speed_pro": "+Halves the cooktime for all recipes.",
+  "tooltip.ironfurnaces_augments.augment_speed_con": "-Uses up twice the amount of fuel.",
+  "tooltip.ironfurnaces_augments.augment_smoking_pro": "+Halves the cooktime for smoking recipes.",
+  "tooltip.ironfurnaces_augments.augment_smoking_con": "-Only allows for smoking recipes.",
+  "tooltip.ironfurnaces_augments.augment_blasting_pro": "+Halves the cooktime for blasting recipes.",
+  "tooltip.ironfurnaces_augments.augment_blasting_con": "-Only allows for blasting recipes.",
+  "tooltip.ironfurnaces_augments.augment_fuel_pro": "+Fuel heats up the furnace twice as much.",
+  "tooltip.ironfurnaces_augments.augment_fuel_con": "-Slows down the cooktime by 25% for all recipes."
+}
