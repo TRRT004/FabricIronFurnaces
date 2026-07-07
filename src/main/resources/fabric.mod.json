@@ -18,9 +18,6 @@
 
   "environment": "*",
   "entrypoints": {
-    "rei_plugins": [
-      "ironfurnaces.rei.REIPlugin"
-    ],
     "main": [
       "ironfurnaces.IronFurnaces"
     ],

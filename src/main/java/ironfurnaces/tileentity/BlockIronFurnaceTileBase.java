@@ -65,7 +65,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.core.HolderLookup;
 
-public abstract class BlockIronFurnaceTileBase extends TileEntityInventory implements net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory<BlockPos>, StackedContentsCompatible {
+public abstract class BlockIronFurnaceTileBase extends TileEntityInventory implements net.fabricmc.fabric.api.menu.v1.ExtendedMenuProvider<BlockPos>, StackedContentsCompatible {
     public static final int INPUT = 0;
     public static final int FUEL = 1;
     public static final int OUTPUT = 2;

@@ -44,7 +44,7 @@ public class BlockWirelessHeaterScreenHandler extends AbstractContainerMenu {
         for(k = 0; k < 9; ++k) {
             this.addSlot(new Slot(playerInventory, k, 8 + k * 18, 142));
         }
-        this.pos = BlockPos.ORIGIN;
+        this.pos = BlockPos.ZERO;
     }
 
     public BlockPos getPos() {

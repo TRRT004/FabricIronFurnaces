@@ -212,7 +212,7 @@ public abstract class BlockIronFurnaceBase extends Block implements EntityBlock 
         stack.set(DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.of(tag));
 
         ((BlockIronFurnaceTileBase)te).onUpdateSent();
-        player.displayClientMessage(Component.literal("Settings copied"), true);
+        player.sendSystemMessage(Component.literal("Settings copied"));
         return InteractionResult.SUCCESS;
     }
 

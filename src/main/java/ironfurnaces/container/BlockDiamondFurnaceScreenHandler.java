@@ -13,7 +13,7 @@ public class BlockDiamondFurnaceScreenHandler extends BlockIronFurnaceScreenHand
         super(Reference.DIAMOND_FURNACE_SCREEN_HANDLER, syncId, playerInventory, pos);
     }
 
-    public BlockDiamondFurnaceScreenHandler(int syncId, net.minecraft.world.entity.player.Inventory playerInventory, net.minecraft.world.entity.player.Inventory inventory, ContainerData propertyDelegate) {
+    public BlockDiamondFurnaceScreenHandler(int syncId, net.minecraft.world.entity.player.Inventory playerInventory, net.minecraft.world.Container inventory, ContainerData propertyDelegate) {
         super(Reference.DIAMOND_FURNACE_SCREEN_HANDLER, syncId, playerInventory, inventory, propertyDelegate);
     }
 }

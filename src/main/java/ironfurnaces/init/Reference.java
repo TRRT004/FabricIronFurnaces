@@ -4,7 +4,6 @@ import ironfurnaces.blocks.*;
 import ironfurnaces.config.Configuration;
 import ironfurnaces.config.IronFurnacesConfig;
 import ironfurnaces.container.*;
-import ironfurnaces.gui.*;
 import ironfurnaces.items.*;
 import ironfurnaces.tileentity.*;
 import net.fabricmc.api.EnvType;
@@ -90,7 +89,7 @@ public class Reference {
             FabricCreativeModeTab.builder()
                 .title(Component.translatable("itemGroup.ironfurnaces"))
                 .icon(() -> new ItemStack(IRON_FURNACE))
-                .entries((displayContext, entries) -> {
+                .displayItems((displayContext, entries) -> {
                     entries.accept(IRON_FURNACE);
                     entries.accept(GOLD_FURNACE);
                     entries.accept(DIAMOND_FURNACE);
@@ -135,63 +134,48 @@ public class Reference {
 
     }
 
-    @Environment(EnvType.CLIENT)
-    public static void initClient()
-    {
-        MenuScreens.register(IRON_FURNACE_SCREEN_HANDLER, BlockIronFurnaceScreen::new);
-        MenuScreens.register(GOLD_FURNACE_SCREEN_HANDLER, BlockGoldFurnaceScreen::new);
-        MenuScreens.register(DIAMOND_FURNACE_SCREEN_HANDLER, BlockDiamondFurnaceScreen::new);
-        MenuScreens.register(EMERALD_FURNACE_SCREEN_HANDLER, BlockEmeraldFurnaceScreen::new);
-        MenuScreens.register(OBSIDIAN_FURNACE_SCREEN_HANDLER, BlockObsidianFurnaceScreen::new);
-        MenuScreens.register(CRYSTAL_FURNACE_SCREEN_HANDLER, BlockCrystalFurnaceScreen::new);
-        MenuScreens.register(NETHERITE_FURNACE_SCREEN_HANDLER, BlockNetheriteFurnaceScreen::new);
-        MenuScreens.register(COPPER_FURNACE_SCREEN_HANDLER, BlockCopperFurnaceScreen::new);
-        MenuScreens.register(SILVER_FURNACE_SCREEN_HANDLER, BlockSilverFurnaceScreen::new);
-        MenuScreens.register(WIRELESS_HEATER_SCREEN_HANDLER, BlockWirelessHeaterScreen::new);
-    }
-
     public static void registration() {
 
         registerBlock(BlockIronFurnace.IRON_FURNACE, IRON_FURNACE);
-        IRON_FURNACE_TILE = Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, Identifier.fromNamespaceAndPath(Reference.MOD_ID, BlockIronFurnace.IRON_FURNACE), BlockEntityType.Builder.of(BlockIronFurnaceTile::new, IRON_FURNACE).build());
-        IRON_FURNACE_SCREEN_HANDLER = Registry.register(BuiltInRegistries.MENU, Identifier.fromNamespaceAndPath(Reference.MOD_ID, BlockIronFurnace.IRON_FURNACE), new net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType<>(BlockIronFurnaceScreenHandler::new, BlockPos.STREAM_CODEC));
+        IRON_FURNACE_TILE = Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, Identifier.fromNamespaceAndPath(Reference.MOD_ID, BlockIronFurnace.IRON_FURNACE), new BlockEntityType<>(BlockIronFurnaceTile::new, java.util.Set.of(IRON_FURNACE)));
+        IRON_FURNACE_SCREEN_HANDLER = Registry.register(BuiltInRegistries.MENU, Identifier.fromNamespaceAndPath(Reference.MOD_ID, BlockIronFurnace.IRON_FURNACE), new net.fabricmc.fabric.api.menu.v1.ExtendedMenuType<>(BlockIronFurnaceScreenHandler::new, BlockPos.STREAM_CODEC));
 
         registerBlock(BlockGoldFurnace.GOLD_FURNACE, GOLD_FURNACE);
-        GOLD_FURNACE_TILE = Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, Identifier.fromNamespaceAndPath(Reference.MOD_ID, BlockGoldFurnace.GOLD_FURNACE), BlockEntityType.Builder.of(BlockGoldFurnaceTile::new, GOLD_FURNACE).build());
-        GOLD_FURNACE_SCREEN_HANDLER = Registry.register(BuiltInRegistries.MENU, Identifier.fromNamespaceAndPath(Reference.MOD_ID, BlockGoldFurnace.GOLD_FURNACE), new net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType<>(BlockGoldFurnaceScreenHandler::new, BlockPos.STREAM_CODEC));
+        GOLD_FURNACE_TILE = Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, Identifier.fromNamespaceAndPath(Reference.MOD_ID, BlockGoldFurnace.GOLD_FURNACE), new BlockEntityType<>(BlockGoldFurnaceTile::new, java.util.Set.of(GOLD_FURNACE)));
+        GOLD_FURNACE_SCREEN_HANDLER = Registry.register(BuiltInRegistries.MENU, Identifier.fromNamespaceAndPath(Reference.MOD_ID, BlockGoldFurnace.GOLD_FURNACE), new net.fabricmc.fabric.api.menu.v1.ExtendedMenuType<>(BlockGoldFurnaceScreenHandler::new, BlockPos.STREAM_CODEC));
 
         registerBlock(BlockDiamondFurnace.DIAMOND_FURNACE, DIAMOND_FURNACE);
-        DIAMOND_FURNACE_TILE = Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, Identifier.fromNamespaceAndPath(Reference.MOD_ID, BlockDiamondFurnace.DIAMOND_FURNACE), BlockEntityType.Builder.of(BlockDiamondFurnaceTile::new, DIAMOND_FURNACE).build());
-        DIAMOND_FURNACE_SCREEN_HANDLER = Registry.register(BuiltInRegistries.MENU, Identifier.fromNamespaceAndPath(Reference.MOD_ID, BlockDiamondFurnace.DIAMOND_FURNACE), new net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType<>(BlockDiamondFurnaceScreenHandler::new, BlockPos.STREAM_CODEC));
+        DIAMOND_FURNACE_TILE = Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, Identifier.fromNamespaceAndPath(Reference.MOD_ID, BlockDiamondFurnace.DIAMOND_FURNACE), new BlockEntityType<>(BlockDiamondFurnaceTile::new, java.util.Set.of(DIAMOND_FURNACE)));
+        DIAMOND_FURNACE_SCREEN_HANDLER = Registry.register(BuiltInRegistries.MENU, Identifier.fromNamespaceAndPath(Reference.MOD_ID, BlockDiamondFurnace.DIAMOND_FURNACE), new net.fabricmc.fabric.api.menu.v1.ExtendedMenuType<>(BlockDiamondFurnaceScreenHandler::new, BlockPos.STREAM_CODEC));
 
         registerBlock(BlockEmeraldFurnace.EMERALD_FURNACE, EMERALD_FURNACE);
-        EMERALD_FURNACE_TILE = Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, Identifier.fromNamespaceAndPath(Reference.MOD_ID, BlockEmeraldFurnace.EMERALD_FURNACE), BlockEntityType.Builder.of(BlockEmeraldFurnaceTile::new, EMERALD_FURNACE).build());
-        EMERALD_FURNACE_SCREEN_HANDLER = Registry.register(BuiltInRegistries.MENU, Identifier.fromNamespaceAndPath(Reference.MOD_ID, BlockEmeraldFurnace.EMERALD_FURNACE), new net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType<>(BlockEmeraldFurnaceScreenHandler::new, BlockPos.STREAM_CODEC));
+        EMERALD_FURNACE_TILE = Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, Identifier.fromNamespaceAndPath(Reference.MOD_ID, BlockEmeraldFurnace.EMERALD_FURNACE), new BlockEntityType<>(BlockEmeraldFurnaceTile::new, java.util.Set.of(EMERALD_FURNACE)));
+        EMERALD_FURNACE_SCREEN_HANDLER = Registry.register(BuiltInRegistries.MENU, Identifier.fromNamespaceAndPath(Reference.MOD_ID, BlockEmeraldFurnace.EMERALD_FURNACE), new net.fabricmc.fabric.api.menu.v1.ExtendedMenuType<>(BlockEmeraldFurnaceScreenHandler::new, BlockPos.STREAM_CODEC));
 
         registerBlock(BlockCrystalFurnace.CRYSTAL_FURNACE, CRYSTAL_FURNACE);
-        CRYSTAL_FURNACE_TILE = Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, Identifier.fromNamespaceAndPath(Reference.MOD_ID, BlockCrystalFurnace.CRYSTAL_FURNACE), BlockEntityType.Builder.of(BlockCrystalFurnaceTile::new, CRYSTAL_FURNACE).build());
-        CRYSTAL_FURNACE_SCREEN_HANDLER = Registry.register(BuiltInRegistries.MENU, Identifier.fromNamespaceAndPath(Reference.MOD_ID, BlockCrystalFurnace.CRYSTAL_FURNACE), new net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType<>(BlockCrystalFurnaceScreenHandler::new, BlockPos.STREAM_CODEC));
+        CRYSTAL_FURNACE_TILE = Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, Identifier.fromNamespaceAndPath(Reference.MOD_ID, BlockCrystalFurnace.CRYSTAL_FURNACE), new BlockEntityType<>(BlockCrystalFurnaceTile::new, java.util.Set.of(CRYSTAL_FURNACE)));
+        CRYSTAL_FURNACE_SCREEN_HANDLER = Registry.register(BuiltInRegistries.MENU, Identifier.fromNamespaceAndPath(Reference.MOD_ID, BlockCrystalFurnace.CRYSTAL_FURNACE), new net.fabricmc.fabric.api.menu.v1.ExtendedMenuType<>(BlockCrystalFurnaceScreenHandler::new, BlockPos.STREAM_CODEC));
 
         registerBlock(BlockObsidianFurnace.OBSIDIAN_FURNACE, OBSIDIAN_FURNACE);
-        OBSIDIAN_FURNACE_TILE = Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, Identifier.fromNamespaceAndPath(Reference.MOD_ID, BlockObsidianFurnace.OBSIDIAN_FURNACE), BlockEntityType.Builder.of(BlockObsidianFurnaceTile::new, OBSIDIAN_FURNACE).build());
-        OBSIDIAN_FURNACE_SCREEN_HANDLER = Registry.register(BuiltInRegistries.MENU, Identifier.fromNamespaceAndPath(Reference.MOD_ID, BlockObsidianFurnace.OBSIDIAN_FURNACE), new net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType<>(BlockObsidianFurnaceScreenHandler::new, BlockPos.STREAM_CODEC));
+        OBSIDIAN_FURNACE_TILE = Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, Identifier.fromNamespaceAndPath(Reference.MOD_ID, BlockObsidianFurnace.OBSIDIAN_FURNACE), new BlockEntityType<>(BlockObsidianFurnaceTile::new, java.util.Set.of(OBSIDIAN_FURNACE)));
+        OBSIDIAN_FURNACE_SCREEN_HANDLER = Registry.register(BuiltInRegistries.MENU, Identifier.fromNamespaceAndPath(Reference.MOD_ID, BlockObsidianFurnace.OBSIDIAN_FURNACE), new net.fabricmc.fabric.api.menu.v1.ExtendedMenuType<>(BlockObsidianFurnaceScreenHandler::new, BlockPos.STREAM_CODEC));
 
         registerBlock(BlockNetheriteFurnace.NETHERITE_FURNACE, NETHERITE_FURNACE);
-        NETHERITE_FURNACE_TILE = Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, Identifier.fromNamespaceAndPath(Reference.MOD_ID, BlockNetheriteFurnace.NETHERITE_FURNACE), BlockEntityType.Builder.of(BlockNetheriteFurnaceTile::new, NETHERITE_FURNACE).build());
-        NETHERITE_FURNACE_SCREEN_HANDLER = Registry.register(BuiltInRegistries.MENU, Identifier.fromNamespaceAndPath(Reference.MOD_ID, BlockNetheriteFurnace.NETHERITE_FURNACE), new net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType<>(BlockNetheriteFurnaceScreenHandler::new, BlockPos.STREAM_CODEC));
+        NETHERITE_FURNACE_TILE = Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, Identifier.fromNamespaceAndPath(Reference.MOD_ID, BlockNetheriteFurnace.NETHERITE_FURNACE), new BlockEntityType<>(BlockNetheriteFurnaceTile::new, java.util.Set.of(NETHERITE_FURNACE)));
+        NETHERITE_FURNACE_SCREEN_HANDLER = Registry.register(BuiltInRegistries.MENU, Identifier.fromNamespaceAndPath(Reference.MOD_ID, BlockNetheriteFurnace.NETHERITE_FURNACE), new net.fabricmc.fabric.api.menu.v1.ExtendedMenuType<>(BlockNetheriteFurnaceScreenHandler::new, BlockPos.STREAM_CODEC));
 
         registerBlock(BlockCopperFurnace.COPPER_FURNACE, COPPER_FURNACE);
-        COPPER_FURNACE_TILE = Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, Identifier.fromNamespaceAndPath(Reference.MOD_ID, BlockCopperFurnace.COPPER_FURNACE), BlockEntityType.Builder.of(BlockCopperFurnaceTile::new, COPPER_FURNACE).build());
-        COPPER_FURNACE_SCREEN_HANDLER = Registry.register(BuiltInRegistries.MENU, Identifier.fromNamespaceAndPath(Reference.MOD_ID, BlockCopperFurnace.COPPER_FURNACE), new net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType<>(BlockCopperFurnaceScreenHandler::new, BlockPos.STREAM_CODEC));
+        COPPER_FURNACE_TILE = Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, Identifier.fromNamespaceAndPath(Reference.MOD_ID, BlockCopperFurnace.COPPER_FURNACE), new BlockEntityType<>(BlockCopperFurnaceTile::new, java.util.Set.of(COPPER_FURNACE)));
+        COPPER_FURNACE_SCREEN_HANDLER = Registry.register(BuiltInRegistries.MENU, Identifier.fromNamespaceAndPath(Reference.MOD_ID, BlockCopperFurnace.COPPER_FURNACE), new net.fabricmc.fabric.api.menu.v1.ExtendedMenuType<>(BlockCopperFurnaceScreenHandler::new, BlockPos.STREAM_CODEC));
 
         registerBlock(BlockSilverFurnace.SILVER_FURNACE, SILVER_FURNACE);
-        SILVER_FURNACE_TILE = Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, Identifier.fromNamespaceAndPath(Reference.MOD_ID, BlockSilverFurnace.SILVER_FURNACE), BlockEntityType.Builder.of(BlockSilverFurnaceTile::new, SILVER_FURNACE).build());
-        SILVER_FURNACE_SCREEN_HANDLER = Registry.register(BuiltInRegistries.MENU, Identifier.fromNamespaceAndPath(Reference.MOD_ID, BlockSilverFurnace.SILVER_FURNACE), new net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType<>(BlockSilverFurnaceScreenHandler::new, BlockPos.STREAM_CODEC));
+        SILVER_FURNACE_TILE = Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, Identifier.fromNamespaceAndPath(Reference.MOD_ID, BlockSilverFurnace.SILVER_FURNACE), new BlockEntityType<>(BlockSilverFurnaceTile::new, java.util.Set.of(SILVER_FURNACE)));
+        SILVER_FURNACE_SCREEN_HANDLER = Registry.register(BuiltInRegistries.MENU, Identifier.fromNamespaceAndPath(Reference.MOD_ID, BlockSilverFurnace.SILVER_FURNACE), new net.fabricmc.fabric.api.menu.v1.ExtendedMenuType<>(BlockSilverFurnaceScreenHandler::new, BlockPos.STREAM_CODEC));
 
         Registry.register(BuiltInRegistries.BLOCK, Identifier.fromNamespaceAndPath(Reference.MOD_ID, BlockWirelessHeater.HEATER), WIRELESS_HEATER);
         Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(Reference.MOD_ID, BlockWirelessHeater.HEATER), new BlockItemHeater(WIRELESS_HEATER, new Item.Properties()));
-        WIRELESS_HEATER_TILE = Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, Identifier.fromNamespaceAndPath(Reference.MOD_ID, BlockWirelessHeater.HEATER), BlockEntityType.Builder.of(BlockWirelessHeaterTile::new, WIRELESS_HEATER).build());
-        WIRELESS_HEATER_SCREEN_HANDLER = Registry.register(BuiltInRegistries.MENU, Identifier.fromNamespaceAndPath(Reference.MOD_ID, BlockWirelessHeater.HEATER), new net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType<>(BlockWirelessHeaterScreenHandler::new, BlockPos.STREAM_CODEC));
+        WIRELESS_HEATER_TILE = Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, Identifier.fromNamespaceAndPath(Reference.MOD_ID, BlockWirelessHeater.HEATER), new BlockEntityType<>(BlockWirelessHeaterTile::new, java.util.Set.of(WIRELESS_HEATER)));
+        WIRELESS_HEATER_SCREEN_HANDLER = Registry.register(BuiltInRegistries.MENU, Identifier.fromNamespaceAndPath(Reference.MOD_ID, BlockWirelessHeater.HEATER), new net.fabricmc.fabric.api.menu.v1.ExtendedMenuType<>(BlockWirelessHeaterScreenHandler::new, BlockPos.STREAM_CODEC));
 
         registerItem("item_heater", HEATER);
         registerItem("item_spooky", SPOOKY);

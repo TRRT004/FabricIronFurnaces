@@ -28,7 +28,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 
 
 
-public class BlockWirelessHeaterTile extends TileEntityInventory implements net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory<BlockPos> {
+public class BlockWirelessHeaterTile extends TileEntityInventory implements net.fabricmc.fabric.api.menu.v1.ExtendedMenuProvider<BlockPos> {
 
     private double energy;
     private int capacity = 100000;

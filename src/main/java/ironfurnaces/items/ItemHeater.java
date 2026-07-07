@@ -1,6 +1,5 @@
 package ironfurnaces.items;
 
-import ironfurnaces.IronFurnacesClient;
 import ironfurnaces.init.Reference;
 import ironfurnaces.util.StringHelper;
 import net.fabricmc.api.EnvType;
@@ -27,7 +26,7 @@ public class ItemHeater extends Item {
     @Environment(EnvType.CLIENT)
     @Override
     public void appendHoverText(ItemStack stack, Item.TooltipContext context, net.minecraft.world.item.component.TooltipDisplay display, java.util.function.Consumer<Component> tooltip, net.minecraft.world.item.TooltipFlag flag) {
-        if (IronFurnacesClient.isShiftKeyDown())
+        if (StringHelper.isShiftKeyDown())
         {
             if (stack.has(net.minecraft.core.component.DataComponents.CUSTOM_DATA)) {
                 net.minecraft.nbt.CompoundTag nbtTag = stack.get(net.minecraft.core.component.DataComponents.CUSTOM_DATA).copyTag();

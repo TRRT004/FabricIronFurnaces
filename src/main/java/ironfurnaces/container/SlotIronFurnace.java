@@ -38,7 +38,7 @@ public class SlotIronFurnace extends Slot {
 
     @Override
     protected void checkTakeAchievements(ItemStack stack) {
-        stack.onCrafted(this.amount);
+        stack.onCraftedBy(this.player, this.amount);
         if (!this.player.level().isClientSide() && this.container instanceof BlockIronFurnaceTileBase) {
             ((BlockIronFurnaceTileBase)this.container).grantExperience(this.player.level(), this.player.position());
         }

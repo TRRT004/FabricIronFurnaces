@@ -113,7 +113,7 @@ public abstract class TileEntityInventory extends BlockEntity implements ITileIn
         super.loadAdditional(input);
         this.inventory = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
         ContainerHelper.loadAllItems(input, this.inventory);
-        Optional<Component> nameOpt = input.read("CustomName", Component.CODEC);
+        Optional<Component> nameOpt = input.read("CustomName", net.minecraft.network.chat.ComponentSerialization.CODEC);
         this.name = nameOpt.isPresent() ? nameOpt.get() : null;
     }
 
@@ -122,7 +122,7 @@ public abstract class TileEntityInventory extends BlockEntity implements ITileIn
         super.saveAdditional(output);
         ContainerHelper.saveAllItems(output, this.inventory);
         if (this.name != null) {
-            output.store("CustomName", Component.CODEC, this.name);
+            output.store("CustomName", net.minecraft.network.chat.ComponentSerialization.CODEC, this.name);
         }
     }
 

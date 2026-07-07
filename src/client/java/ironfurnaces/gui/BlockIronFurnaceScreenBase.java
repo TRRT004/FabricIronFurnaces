@@ -14,14 +14,14 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.sounds.SoundEvents;
 
 import net.minecraft.network.chat.Component;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import org.lwjgl.glfw.GLFW;
@@ -31,8 +31,8 @@ import java.util.Optional;
 
 public abstract class BlockIronFurnaceScreenBase<T extends BlockIronFurnaceScreenHandlerBase> extends AbstractContainerScreen<T> {
 
-    public static ResourceLocation GUI;
-    public static final ResourceLocation WIDGETS = net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "textures/gui/widgets.png");
+    public static Identifier GUI;
+    public static final Identifier WIDGETS = net.minecraft.resources.Identifier.fromNamespaceAndPath(Reference.MOD_ID, "textures/gui/widgets.png");
     net.minecraft.world.entity.player.Inventory playerInv;
     Component name;
     /** The X size of the inventory window in pixels. */
@@ -42,37 +42,39 @@ public abstract class BlockIronFurnaceScreenBase<T extends BlockIronFurnaceScree
 
     public boolean add_button;
     public boolean sub_button;
+    public final T handler;
 
-    public BlockIronFurnaceScreenBase(T handler, net.minecraft.world.entity.player.Inventory inv, Component name, ResourceLocation gui) {
+    public BlockIronFurnaceScreenBase(T handler, net.minecraft.world.entity.player.Inventory inv, Component name, Identifier gui) {
         super(handler, inv, name);
+        this.handler = handler;
         playerInv = inv;
         this.name = name;
         this.GUI = gui;
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float delta) {
-        this.renderBackground(guiGraphics, mouseX, mouseY, delta);
-        super.render(guiGraphics, mouseX, mouseY, delta);
-        this.renderTooltip(guiGraphics, mouseX, mouseY);
+    public void extractRenderState(net.minecraft.client.gui.GuiGraphicsExtractor extractor, int mouseX, int mouseY, float partialTick) {
+        this.extractBackground(extractor, mouseX, mouseY, partialTick);
+        super.extractRenderState(extractor, mouseX, mouseY, partialTick);
+        this.extractTooltip(extractor, mouseX, mouseY);
     }
 
 
     @Override
-    protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY) {
+    protected void extractLabels(net.minecraft.client.gui.GuiGraphicsExtractor extractor, int mouseX, int mouseY) {
         //drawString(matrices, this.font, "Energy: " + container.getEnergy(), 10, 10, 0xffffff);
-        guiGraphics.drawString(this.font, this.playerInv.getDisplayName(), 7, this.imageHeight - 93, 4210752);
-        guiGraphics.drawString(this.font, name, 7 + this.imageWidth / 2 - this.font.width(name) / 2, 6, 4210752);
+        extractor.text(this.font, this.playerInv.getDisplayName(), 7, this.imageHeight - 93, 4210752);
+        extractor.text(this.font, name, 7 + this.imageWidth / 2 - this.font.width(name) / 2, 6, 4210752);
 
         if (showInventoryButtons(handler).get() && getRedstoneMode(handler).get() == 4) {
             int comSub = getComSub(handler).get();
             int i = comSub > 9 ? 28 : 31;
-            guiGraphics.drawString(this.font, comSub + "", i - 42, 90, 4210752);
+            extractor.text(this.font, comSub + "", i - 42, 90, 4210752);
         }
         int actualMouseX = mouseX - ((this.width - this.imageWidth) / 2);
         int actualMouseY = mouseY - ((this.height - this.imageHeight) / 2);
 
-        this.addTooltips(guiGraphics, actualMouseX, actualMouseY);
+        this.addTooltips(extractor, actualMouseX, actualMouseY);
 
     }
 
@@ -257,41 +259,41 @@ public abstract class BlockIronFurnaceScreenBase<T extends BlockIronFurnaceScree
         if (handler instanceof BlockIronFurnaceScreenHandlerBase) {
             BlockPos pos = ((BlockIronFurnaceScreenHandlerBase) handler).getPos();
             Level world = ((BlockIronFurnaceScreenHandlerBase) handler).getLevel();
-            return pos != null ? Optional.of(((BlockIronFurnaceTileBase) world.getBlockEntity(pos)).getPos()) : Optional.empty();
+            return pos != null ? Optional.of(((BlockIronFurnaceTileBase) world.getBlockEntity(pos)).getBlockPos()) : Optional.empty();
         } else {
             return Optional.empty();
         }
     }
 
-    private void addTooltips(GuiGraphics guiGraphics, int mouseX, int mouseY) {
+    private void addTooltips(GuiGraphicsExtractor extractor, int mouseX, int mouseY) {
 
         if (!showInventoryButtons(handler).get()) {
             if (mouseX >= -20 && mouseX <= 0 && mouseY >= 4 && mouseY <= 26) {
-                guiGraphics.renderTooltip(this.font, Component.translatable("tooltip." + Reference.MOD_ID + ".gui_open"), mouseX, mouseY);
+                extractor.setTooltipForNextFrame(this.font, Component.translatable("tooltip." + Reference.MOD_ID + ".gui_open"), mouseX, mouseY);
             }
         } else {
             if (mouseX >= -13 && mouseX <= 0 && mouseY >= 4 && mouseY <= 26) {
-                guiGraphics.renderTooltip(this.font, StringHelper.getShiftInfoGui(), mouseX, mouseY);
+                extractor.setComponentTooltipForNextFrame(this.font, StringHelper.getShiftInfoGui(), mouseX, mouseY);
             } else if (mouseX >= -47 && mouseX <= -34 && mouseY >= 12 && mouseY <= 25) {
                 List<Component> list = Lists.newArrayList();
                 list.add(Component.translatable("tooltip." + Reference.MOD_ID + ".gui_auto_input"));
                 list.add(Component.literal("" + getAutoInput(handler).get()));
-                guiGraphics.renderComponentTooltip(this.font, list, mouseX, mouseY);
+                extractor.setComponentTooltipForNextFrame(this.font, list, mouseX, mouseY);
             } else if (mouseX >= -29 && mouseX <= -16 && mouseY >= 12 && mouseY <= 25) {
                 List<Component> list = Lists.newArrayList();
                 list.add(Component.translatable("tooltip." + Reference.MOD_ID + ".gui_auto_output"));
                 list.add(Component.literal("" + getAutoOutput(handler).get()));
-                guiGraphics.renderComponentTooltip(this.font, list, mouseX, mouseY);
+                extractor.setComponentTooltipForNextFrame(this.font, list, mouseX, mouseY);
             } else if (mouseX >= -32 && mouseX <= -23 && mouseY >= 31 && mouseY <= 40) {
                 List<Component> list = Lists.newArrayList();
                 list.add(Component.translatable("tooltip." + Reference.MOD_ID + ".gui_top"));
                 list.add(getTooltip(handler, 1).get());
-                guiGraphics.renderComponentTooltip(this.font, list, mouseX, mouseY);
+                extractor.setComponentTooltipForNextFrame(this.font, list, mouseX, mouseY);
             } else if (mouseX >= -32 && mouseX <= -23 && mouseY >= 55 && mouseY <= 64) {
                 List<Component> list = Lists.newArrayList();
                 list.add(Component.translatable("tooltip." + Reference.MOD_ID + ".gui_bottom"));
                 list.add(getTooltip(handler, 0).get());
-                guiGraphics.renderComponentTooltip(this.font, list, mouseX, mouseY);
+                extractor.setComponentTooltipForNextFrame(this.font, list, mouseX, mouseY);
             } else if (mouseX >= -32 && mouseX <= -23 && mouseY >= 43 && mouseY <= 52) {
                 List<Component> list = Lists.newArrayList();
                 if (IronFurnacesClient.isShiftKeyDown()) {
@@ -300,26 +302,26 @@ public abstract class BlockIronFurnaceScreenBase<T extends BlockIronFurnaceScree
                     list.add(Component.translatable("tooltip." + Reference.MOD_ID + ".gui_front"));
                     list.add(getTooltip(handler, getIndexFront(handler).get()).get());
                 }
-                guiGraphics.renderComponentTooltip(this.font, list, mouseX, mouseY);
+                extractor.setComponentTooltipForNextFrame(this.font, list, mouseX, mouseY);
             } else if (mouseX >= -44 && mouseX <= -35 && mouseY >= 43 && mouseY <= 52) {
                 List<Component> list = Lists.newArrayList();
                 list.add(Component.translatable("tooltip." + Reference.MOD_ID + ".gui_left"));
                 list.add(getTooltip(handler, getIndexLeft(handler).get()).get());
-                guiGraphics.renderComponentTooltip(this.font, list, mouseX, mouseY);
+                extractor.setComponentTooltipForNextFrame(this.font, list, mouseX, mouseY);
             } else if (mouseX >= -20 && mouseX <= -11 && mouseY >= 43 && mouseY <= 52) {
                 List<Component> list = Lists.newArrayList();
                 list.add(Component.translatable("tooltip." + Reference.MOD_ID + ".gui_right"));
                 list.add(getTooltip(handler, getIndexRight(handler).get()).get());
-                guiGraphics.renderComponentTooltip(this.font, list, mouseX, mouseY);
+                extractor.setComponentTooltipForNextFrame(this.font, list, mouseX, mouseY);
             } else if (mouseX >= -20 && mouseX <= -11 && mouseY >= 55 && mouseY <= 64) {
                 List<Component> list = Lists.newArrayList();
                 list.add(Component.translatable("tooltip." + Reference.MOD_ID + ".gui_back"));
                 list.add(getTooltip(handler, getIndexBack(handler).get()).get());
-                guiGraphics.renderComponentTooltip(this.font, list, mouseX, mouseY);
+                extractor.setComponentTooltipForNextFrame(this.font, list, mouseX, mouseY);
             } else if (mouseX >= -47 && mouseX <= -34 && mouseY >= 70 && mouseY <= 83) {
                 List<Component> list = Lists.newArrayList();
                 list.add(Component.translatable("tooltip." + Reference.MOD_ID + ".gui_redstone_ignored"));
-                guiGraphics.renderComponentTooltip(this.font, list, mouseX, mouseY);
+                extractor.setComponentTooltipForNextFrame(this.font, list, mouseX, mouseY);
             } else if (mouseX >= -31 && mouseX <= -18 && mouseY >= 70 && mouseY <= 83) {
                 List<Component> list = Lists.newArrayList();
                 if (IronFurnacesClient.isShiftKeyDown()) {
@@ -327,50 +329,50 @@ public abstract class BlockIronFurnaceScreenBase<T extends BlockIronFurnaceScree
                 } else {
                     list.add(Component.translatable("tooltip." + Reference.MOD_ID + ".gui_redstone_high"));
                 }
-                guiGraphics.renderComponentTooltip(this.font, list, mouseX, mouseY);
+                extractor.setComponentTooltipForNextFrame(this.font, list, mouseX, mouseY);
             } else if (mouseX >= -15 && mouseX <= -2 && mouseY >= 70 && mouseY <= 83) {
                 List<Component> list = Lists.newArrayList();
                 list.add(Component.translatable("tooltip." + Reference.MOD_ID + ".gui_redstone_comparator"));
-                guiGraphics.renderComponentTooltip(this.font, list, mouseX, mouseY);
+                extractor.setComponentTooltipForNextFrame(this.font, list, mouseX, mouseY);
             } else if (mouseX >= -47 && mouseX <= -34 && mouseY >= 86 && mouseY <= 99) {
                 List<Component> list = Lists.newArrayList();
                 list.add(Component.translatable("tooltip." + Reference.MOD_ID + ".gui_redstone_comparator_sub"));
-                guiGraphics.renderComponentTooltip(this.font, list, mouseX, mouseY);
+                extractor.setComponentTooltipForNextFrame(this.font, list, mouseX, mouseY);
             }
 
         }
     }
 
     @Override
-    protected void renderBg(GuiGraphics guiGraphics, float delta, int mouseX, int mouseY) {
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+    public void extractContents(net.minecraft.client.gui.GuiGraphicsExtractor extractor, int mouseX, int mouseY, float partialTick) {
+        
+        
         int i = (this.width - this.imageWidth) / 2;
         int j = (this.height - this.imageHeight) / 2;
-        guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.GUI, i, j, 0, 0, this.imageWidth, this.imageHeight, 256, 256);
+        extractor.blit(this.GUI, i, j, this.imageWidth, this.imageHeight, (float)(0), (float)(0), (float)(this.imageWidth), (float)(this.imageHeight));
         int k;
         if (((BlockIronFurnaceScreenHandlerBase)this.handler).isBurning()) {
             k = ((BlockIronFurnaceScreenHandlerBase)this.handler).getFuelProgress();
-            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.GUI, i + 56, j + 36 + 12 - k, 176, 12 - k, 14, k + 1, 256, 256);
+            extractor.blit(this.GUI, i + 56, j + 36 + 12 - k, 14, k + 1, (float)(176), (float)(12 - k), (float)(14), (float)(k + 1));
         }
 
         k = ((BlockIronFurnaceScreenHandlerBase)this.handler).getCookProgress();
-        guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.GUI, i + 79, j + 34, 176, 14, k + 1, 16, 256, 256);
+        extractor.blit(this.GUI, i + 79, j + 34, k + 1, 16, (float)(176), (float)(14), (float)(k + 1), (float)(16));
 
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+        
         int actualMouseX = mouseX - ((this.width - this.imageWidth) / 2);
         int actualMouseY = mouseY - ((this.height - this.imageHeight) / 2);
 
-        this.addInventoryButtons(guiGraphics, ((BlockIronFurnaceScreenHandlerBase) this.handler), actualMouseX, actualMouseY);
-        this.addRedstoneButtons(guiGraphics, ((BlockIronFurnaceScreenHandlerBase) this.handler), actualMouseX, actualMouseY);
+        this.addInventoryButtons(extractor, ((BlockIronFurnaceScreenHandlerBase) this.handler), actualMouseX, actualMouseY);
+        this.addRedstoneButtons(extractor, ((BlockIronFurnaceScreenHandlerBase) this.handler), actualMouseX, actualMouseY);
 
     }
 
-    private void addRedstoneButtons(GuiGraphics guiGraphics, BlockIronFurnaceScreenHandlerBase handler, int mouseX, int mouseY) {
+    private void addRedstoneButtons(GuiGraphicsExtractor extractor, BlockIronFurnaceScreenHandlerBase handler, int mouseX, int mouseY) {
         int guiLeft = (this.width - this.imageWidth) / 2;
         int guiTop = (this.height - this.imageHeight) / 2;
         if (showInventoryButtons(handler).get()) {
-            this.blitRedstone(guiGraphics);
+            this.blitRedstone(extractor);
             if (getRedstoneMode(handler).get() == 4) {
                 int comSub = getComSub(handler).get();
                 boolean flag = IronFurnacesClient.isShiftKeyDown();
@@ -378,26 +380,26 @@ public abstract class BlockIronFurnaceScreenBase<T extends BlockIronFurnaceScree
                     if (comSub > 0) {
                         this.sub_button = true;
                         if (mouseX >= -31 && mouseX <= -18 && mouseY >= 86 && mouseY <= 99) {
-                            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 31, guiTop + 86, 14, 0, 14, 14, 256, 256);
+                            extractor.blit(this.WIDGETS, guiLeft - 31, guiTop + 86, 14, 14, (float)(14), (float)(0), (float)(14), (float)(14));
                         } else {
-                            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 31, guiTop + 86, 0, 0, 14, 14, 256, 256);
+                            extractor.blit(this.WIDGETS, guiLeft - 31, guiTop + 86, 14, 14, (float)(0), (float)(0), (float)(14), (float)(14));
                         }
                     } else {
                         this.sub_button = false;
-                        guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 31, guiTop + 86, 28, 0, 14, 14, 256, 256);
+                        extractor.blit(this.WIDGETS, guiLeft - 31, guiTop + 86, 14, 14, (float)(28), (float)(0), (float)(14), (float)(14));
                     }
 
                 } else {
                     if (comSub < 15) {
                         this.add_button = true;
                         if (mouseX >= -31 && mouseX <= -18 && mouseY >= 86 && mouseY <= 99) {
-                            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 31, guiTop + 86, 14, 14, 14, 14, 256, 256);
+                            extractor.blit(this.WIDGETS, guiLeft - 31, guiTop + 86, 14, 14, (float)(14), (float)(14), (float)(14), (float)(14));
                         } else {
-                            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 31, guiTop + 86, 0, 14, 14, 14, 256, 256);
+                            extractor.blit(this.WIDGETS, guiLeft - 31, guiTop + 86, 14, 14, (float)(0), (float)(14), (float)(14), (float)(14));
                         }
                     } else {
                         this.add_button = false;
-                        guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 31, guiTop + 86, 28, 14, 14, 14, 256, 256);
+                        extractor.blit(this.WIDGETS, guiLeft - 31, guiTop + 86, 14, 14, (float)(28), (float)(14), (float)(14), (float)(14));
 
                     }
                 }
@@ -405,116 +407,116 @@ public abstract class BlockIronFurnaceScreenBase<T extends BlockIronFurnaceScree
         }
     }
 
-    private void addInventoryButtons(GuiGraphics guiGraphics, BlockIronFurnaceScreenHandlerBase container, int mouseX, int mouseY) {
+    private void addInventoryButtons(GuiGraphicsExtractor extractor, BlockIronFurnaceScreenHandlerBase container, int mouseX, int mouseY) {
         int guiLeft = (this.width - this.imageWidth) / 2;
         int guiTop = (this.height - this.imageHeight) / 2;
         if (!showInventoryButtons(container).get()) {
-            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 20, guiTop + 4, 0, 28, 23, 26, 256, 256);
+            extractor.blit(this.WIDGETS, guiLeft - 20, guiTop + 4, 23, 26, (float)(0), (float)(28), (float)(23), (float)(26));
         } else if (showInventoryButtons(container).get()) {
-            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 56, guiTop + 4, 0, 54, 59, 107, 256, 256);
+            extractor.blit(this.WIDGETS, guiLeft - 56, guiTop + 4, 59, 107, (float)(0), (float)(54), (float)(59), (float)(107));
             if (mouseX >= -47 && mouseX <= -34 && mouseY >= 12 && mouseY <= 25 || getAutoInput(container).get()) {
-                guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 47, guiTop + 12, 0, 189, 14, 14, 256, 256);
+                extractor.blit(this.WIDGETS, guiLeft - 47, guiTop + 12, 14, 14, (float)(0), (float)(189), (float)(14), (float)(14));
             }
             if (mouseX >= -29 && mouseX <= -16 && mouseY >= 12 && mouseY <= 25 || getAutoOutput(container).get()) {
-                guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 29, guiTop + 12, 14, 189, 14, 14, 256, 256);
+                extractor.blit(this.WIDGETS, guiLeft - 29, guiTop + 12, 14, 14, (float)(14), (float)(189), (float)(14), (float)(14));
             }
-            this.blitIO(guiGraphics);
+            this.blitIO(extractor);
         }
 
 
     }
 
-    private void blitRedstone(GuiGraphics guiGraphics) {
+    private void blitRedstone(GuiGraphicsExtractor extractor) {
         int guiLeft = (this.width - this.imageWidth) / 2;
         int guiTop = (this.height - this.imageHeight) / 2;
         boolean flag = IronFurnacesClient.isShiftKeyDown();
         if (flag) {
-            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 31, guiTop + 70, 84, 189, 14, 14, 256, 256);
+            extractor.blit(this.WIDGETS, guiLeft - 31, guiTop + 70, 14, 14, (float)(84), (float)(189), (float)(14), (float)(14));
         }
         int setting = getRedstoneMode(handler).get();
         if (setting == 0) {
-            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 47, guiTop + 70, 28, 189, 14, 14, 256, 256);
+            extractor.blit(this.WIDGETS, guiLeft - 47, guiTop + 70, 14, 14, (float)(28), (float)(189), (float)(14), (float)(14));
         } else if (setting == 1 && !flag) {
-            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 31, guiTop + 70, 42, 189, 14, 14, 256, 256);
+            extractor.blit(this.WIDGETS, guiLeft - 31, guiTop + 70, 14, 14, (float)(42), (float)(189), (float)(14), (float)(14));
         } else if (setting == 2) {
-            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 31, guiTop + 70, 98, 189, 14, 14, 256, 256);
+            extractor.blit(this.WIDGETS, guiLeft - 31, guiTop + 70, 14, 14, (float)(98), (float)(189), (float)(14), (float)(14));
         } else if (setting == 3) {
-            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 15, guiTop + 70, 56, 189, 14, 14, 256, 256);
+            extractor.blit(this.WIDGETS, guiLeft - 15, guiTop + 70, 14, 14, (float)(56), (float)(189), (float)(14), (float)(14));
         } else if (setting == 4) {
-            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 47, guiTop + 86, 70, 189, 14, 14, 256, 256);
+            extractor.blit(this.WIDGETS, guiLeft - 47, guiTop + 86, 14, 14, (float)(70), (float)(189), (float)(14), (float)(14));
         }
 
     }
 
-    private void blitIO(GuiGraphics guiGraphics) {
+    private void blitIO(GuiGraphicsExtractor extractor) {
         int guiLeft = (this.width - this.imageWidth) / 2;
         int guiTop = (this.height - this.imageHeight) / 2;
         int[] settings = new int[]{0, 0, 0, 0, 0, 0};
         int setting = getSettingTop(handler).get();
         if (setting == 1) {
-            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 32, guiTop + 31, 0, 161, 10, 10, 256, 256);
+            extractor.blit(this.WIDGETS, guiLeft - 32, guiTop + 31, 10, 10, (float)(0), (float)(161), (float)(10), (float)(10));
         } else if (setting == 2) {
-            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 32, guiTop + 31, 10, 161, 10, 10, 256, 256);
+            extractor.blit(this.WIDGETS, guiLeft - 32, guiTop + 31, 10, 10, (float)(10), (float)(161), (float)(10), (float)(10));
         } else if (setting == 3) {
-            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 32, guiTop + 31, 20, 161, 10, 10, 256, 256);
+            extractor.blit(this.WIDGETS, guiLeft - 32, guiTop + 31, 10, 10, (float)(20), (float)(161), (float)(10), (float)(10));
         } else if (setting == 4) {
-            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 32, guiTop + 31, 30, 161, 10, 10, 256, 256);
+            extractor.blit(this.WIDGETS, guiLeft - 32, guiTop + 31, 10, 10, (float)(30), (float)(161), (float)(10), (float)(10));
         }
         settings[1] = setting;
 
         setting = getSettingBottom(handler).get();
         if (setting == 1) {
-            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 32, guiTop + 55, 0, 161, 10, 10, 256, 256);
+            extractor.blit(this.WIDGETS, guiLeft - 32, guiTop + 55, 10, 10, (float)(0), (float)(161), (float)(10), (float)(10));
         } else if (setting == 2) {
-            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 32, guiTop + 55, 10, 161, 10, 10, 256, 256);
+            extractor.blit(this.WIDGETS, guiLeft - 32, guiTop + 55, 10, 10, (float)(10), (float)(161), (float)(10), (float)(10));
         } else if (setting == 3) {
-            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 32, guiTop + 55, 20, 161, 10, 10, 256, 256);
+            extractor.blit(this.WIDGETS, guiLeft - 32, guiTop + 55, 10, 10, (float)(20), (float)(161), (float)(10), (float)(10));
         } else if (setting == 4) {
-            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 32, guiTop + 55, 30, 161, 10, 10, 256, 256);
+            extractor.blit(this.WIDGETS, guiLeft - 32, guiTop + 55, 10, 10, (float)(30), (float)(161), (float)(10), (float)(10));
         }
         settings[0] = setting;
         setting = getSettingFront(handler).get();
         if (setting == 1) {
-            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 32, guiTop + 43, 0, 161, 10, 10, 256, 256);
+            extractor.blit(this.WIDGETS, guiLeft - 32, guiTop + 43, 10, 10, (float)(0), (float)(161), (float)(10), (float)(10));
         } else if (setting == 2) {
-            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 32, guiTop + 43, 10, 161, 10, 10, 256, 256);
+            extractor.blit(this.WIDGETS, guiLeft - 32, guiTop + 43, 10, 10, (float)(10), (float)(161), (float)(10), (float)(10));
         } else if (setting == 3) {
-            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 32, guiTop + 43, 20, 161, 10, 10, 256, 256);
+            extractor.blit(this.WIDGETS, guiLeft - 32, guiTop + 43, 10, 10, (float)(20), (float)(161), (float)(10), (float)(10));
         } else if (setting == 4) {
-            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 32, guiTop + 43, 30, 161, 10, 10, 256, 256);
+            extractor.blit(this.WIDGETS, guiLeft - 32, guiTop + 43, 10, 10, (float)(30), (float)(161), (float)(10), (float)(10));
         }
         settings[getIndexFront(handler).get()] = setting;
         setting = getSettingBack(handler).get();
         if (setting == 1) {
-            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 20, guiTop + 55, 0, 161, 10, 10, 256, 256);
+            extractor.blit(this.WIDGETS, guiLeft - 20, guiTop + 55, 10, 10, (float)(0), (float)(161), (float)(10), (float)(10));
         } else if (setting == 2) {
-            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 20, guiTop + 55, 10, 161, 10, 10, 256, 256);
+            extractor.blit(this.WIDGETS, guiLeft - 20, guiTop + 55, 10, 10, (float)(10), (float)(161), (float)(10), (float)(10));
         } else if (setting == 3) {
-            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 20, guiTop + 55, 20, 161, 10, 10, 256, 256);
+            extractor.blit(this.WIDGETS, guiLeft - 20, guiTop + 55, 10, 10, (float)(20), (float)(161), (float)(10), (float)(10));
         } else if (setting == 4) {
-            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 20, guiTop + 55, 30, 161, 10, 10, 256, 256);
+            extractor.blit(this.WIDGETS, guiLeft - 20, guiTop + 55, 10, 10, (float)(30), (float)(161), (float)(10), (float)(10));
         }
         settings[getIndexBack(handler).get()] = setting;
         setting = getSettingLeft(handler).get();
         if (setting == 1) {
-            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 44, guiTop + 43, 0, 161, 10, 10, 256, 256);
+            extractor.blit(this.WIDGETS, guiLeft - 44, guiTop + 43, 10, 10, (float)(0), (float)(161), (float)(10), (float)(10));
         } else if (setting == 2) {
-            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 44, guiTop + 43, 10, 161, 10, 10, 256, 256);
+            extractor.blit(this.WIDGETS, guiLeft - 44, guiTop + 43, 10, 10, (float)(10), (float)(161), (float)(10), (float)(10));
         } else if (setting == 3) {
-            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 44, guiTop + 43, 20, 161, 10, 10, 256, 256);
+            extractor.blit(this.WIDGETS, guiLeft - 44, guiTop + 43, 10, 10, (float)(20), (float)(161), (float)(10), (float)(10));
         } else if (setting == 4) {
-            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 44, guiTop + 43, 30, 161, 10, 10, 256, 256);
+            extractor.blit(this.WIDGETS, guiLeft - 44, guiTop + 43, 10, 10, (float)(30), (float)(161), (float)(10), (float)(10));
         }
         settings[getIndexLeft(handler).get()] = setting;
         setting = getSettingRight(handler).get();
         if (setting == 1) {
-            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 20, guiTop + 43, 0, 161, 10, 10, 256, 256);
+            extractor.blit(this.WIDGETS, guiLeft - 20, guiTop + 43, 10, 10, (float)(0), (float)(161), (float)(10), (float)(10));
         } else if (setting == 2) {
-            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 20, guiTop + 43, 10, 161, 10, 10, 256, 256);
+            extractor.blit(this.WIDGETS, guiLeft - 20, guiTop + 43, 10, 10, (float)(10), (float)(161), (float)(10), (float)(10));
         } else if (setting == 3) {
-            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 20, guiTop + 43, 20, 161, 10, 10, 256, 256);
+            extractor.blit(this.WIDGETS, guiLeft - 20, guiTop + 43, 10, 10, (float)(20), (float)(161), (float)(10), (float)(10));
         } else if (setting == 4) {
-            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft - 20, guiTop + 43, 30, 161, 10, 10, 256, 256);
+            extractor.blit(this.WIDGETS, guiLeft - 20, guiTop + 43, 10, 10, (float)(30), (float)(161), (float)(10), (float)(10));
         }
         settings[getIndexRight(handler).get()] = setting;
         boolean input = false;
@@ -533,36 +535,32 @@ public abstract class BlockIronFurnaceScreenBase<T extends BlockIronFurnaceScree
             }
         }
         if (input || both) {
-            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft + 55, guiTop + 16, 0, 171, 18, 18, 256, 256);
+            extractor.blit(this.WIDGETS, guiLeft + 55, guiTop + 16, 18, 18, (float)(0), (float)(171), (float)(18), (float)(18));
         }
         if (output || both) {
-            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft + 111, guiTop + 30, 0, 203, 26, 26, 256, 256);
+            extractor.blit(this.WIDGETS, guiLeft + 111, guiTop + 30, 26, 26, (float)(0), (float)(203), (float)(26), (float)(26));
         }
         if (fuel) {
-            guiGraphics.blit(net.minecraft.client.gui.screens.Screen::applyBlitOffset, this.WIDGETS, guiLeft + 55, guiTop + 52, 18, 171, 18, 18, 256, 256);
+            extractor.blit(this.WIDGETS, guiLeft + 55, guiTop + 52, 18, 18, (float)(18), (float)(171), (float)(18), (float)(18));
         }
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+    public boolean mouseClicked(net.minecraft.client.input.MouseButtonEvent event, boolean handled) {
+        double mouseX = event.x();
+        double mouseY = event.y();
+        int button = event.button();
         double actualMouseX = mouseX - ((this.width - this.imageWidth) / 2);
         double actualMouseY = mouseY - ((this.height - this.imageHeight) / 2);
         this.mouseClickedRedstoneButtons(actualMouseX, actualMouseY);
         this.mouseClickedInventoryButtons(button, this.handler, actualMouseX, actualMouseY);
-        return super.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(event, handled);
     }
 
     public void sendServer(int index, int value)
     {
         BlockPos pos = getBlockPos(handler).get();
-        net.minecraft.network.FriendlyByteBuf buf = new net.minecraft.network.FriendlyByteBuf(io.netty.buffer.Unpooled.buffer());
-        buf.writeInt(pos.getX());
-        buf.writeInt(pos.getY());
-        buf.writeInt(pos.getZ());
-        buf.writeInt(index);
-        buf.writeInt(value);
-
-        ClientPlayNetworking.send(IronFurnaces.furnace_packet, buf);
+        ClientPlayNetworking.send(new ironfurnaces.network.FurnaceSettingsPayload(pos, index, value));
     }
 
     public void mouseClickedInventoryButtons(int button, BlockIronFurnaceScreenHandlerBase container, double mouseX, double mouseY) {
@@ -577,19 +575,19 @@ public abstract class BlockIronFurnaceScreenBase<T extends BlockIronFurnaceScree
             } else if (mouseX >= -47 && mouseX <= -34 && mouseY >= 12 && mouseY <= 25) {
                 if (!getAutoInput(container).get()) {
                     sendServer(6, 1);
-                    Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 0.6F, 0.3F));
+                    Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK.value(), 0.6F, 0.3F));
                 } else {
                     sendServer(6, 0);
-                    Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 0.6F, 0.3F));
+                    Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK.value(), 0.6F, 0.3F));
                 }
 
             } else if (mouseX >= -29 && mouseX <= -16 && mouseY >= 12 && mouseY <= 25) {
                 if (!getAutoOutput(container).get()) {
                     sendServer(7, 1);
-                    Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 0.6F, 0.3F));
+                    Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK.value(), 0.6F, 0.3F));
                 } else {
                     sendServer(7, 0);
-                    Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 0.6F, 0.3F));
+                    Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK.value(), 0.6F, 0.3F));
                 }
             } else if (mouseX >= -32 && mouseX <= -23 && mouseY >= 31 && mouseY <= 40) {
                 if (flag) {
@@ -611,7 +609,7 @@ public abstract class BlockIronFurnaceScreenBase<T extends BlockIronFurnaceScree
                     sendServer(3, 0);
                     sendServer(4, 0);
                     sendServer(5, 0);
-                    Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 0.8F, 0.3F));
+                    Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK.value(), 0.8F, 0.3F));
                 } else {
                     if (flag) {
                         sendToServerInverted(getSettingFront(container).get(), getIndexFront(container).get());
@@ -642,7 +640,7 @@ public abstract class BlockIronFurnaceScreenBase<T extends BlockIronFurnaceScree
     }
 
     private void sendToServer(int setting, int index) {
-        Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 0.6F, 0.3F));
+        Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK.value(), 0.6F, 0.3F));
         if (setting <= 0) {
             sendServer(index, 1);
         } else if (setting == 1) {
@@ -657,7 +655,7 @@ public abstract class BlockIronFurnaceScreenBase<T extends BlockIronFurnaceScree
     }
 
     private void sendToServerInverted(int setting, int index) {
-        Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 0.3F, 0.3F));
+        Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK.value(), 0.3F, 0.3F));
         if (setting <= 0) {
             sendServer(index, 4);
         } else if (setting == 1) {
@@ -675,44 +673,44 @@ public abstract class BlockIronFurnaceScreenBase<T extends BlockIronFurnaceScree
         if (mouseX >= -31 && mouseX <= -18 && mouseY >= 86 && mouseY <= 99) {
             if (this.sub_button && IronFurnacesClient.isShiftKeyDown()) {
                 sendServer(9, getComSub(handler).get() - 1);
-                Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 0.3F, 0.3F));
+                Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK.value(), 0.3F, 0.3F));
             }
         }
         if (mouseX >= -31 && mouseX <= -18 && mouseY >= 86 && mouseY <= 99) {
             if (this.add_button && !IronFurnacesClient.isShiftKeyDown()) {
                 sendServer(9, getComSub(handler).get() + 1);
-                Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 0.6F, 0.3F));
+                Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK.value(), 0.6F, 0.3F));
             }
         }
         if (mouseX >= -47 && mouseX <= -34 && mouseY >= 70 && mouseY <= 83) {
             if (getRedstoneMode(handler).get() != 0) {
                 sendServer(8, 0);
-                Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 0.6F, 0.3F));
+                Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK.value(), 0.6F, 0.3F));
             }
         }
 
         if (mouseX >= -31 && mouseX <= -18 && mouseY >= 70 && mouseY <= 83) {
             if (getRedstoneMode(handler).get() != 1 && !IronFurnacesClient.isShiftKeyDown()) {
                 sendServer(8, 1);
-                Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 0.6F, 0.3F));
+                Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK.value(), 0.6F, 0.3F));
             }
             if (getRedstoneMode(handler).get() != 2 && IronFurnacesClient.isShiftKeyDown()) {
                 sendServer(8, 2);
-                Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 0.6F, 0.3F));
+                Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK.value(), 0.6F, 0.3F));
             }
         }
 
         if (mouseX >= -15 && mouseX <= -2 && mouseY >= 70 && mouseY <= 83) {
             if (getRedstoneMode(handler).get() != 3) {
                 sendServer(8, 3);
-                Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 0.6F, 0.3F));
+                Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK.value(), 0.6F, 0.3F));
             }
         }
 
         if (mouseX >= -47 && mouseX <= -34 && mouseY >= 86 && mouseY <= 99) {
             if (getRedstoneMode(handler).get() != 4) {
                 sendServer(8, 4);
-                Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 0.6F, 0.3F));
+                Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK.value(), 0.6F, 0.3F));
             }
         }
     }

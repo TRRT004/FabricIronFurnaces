@@ -1,153 +1,41 @@
-buildscript {
-	dependencies {
-		classpath 'org.kohsuke:github-api:1.114'
-	}
+plugins {
+    id 'net.fabricmc.fabric-loom' version "${loom_version}"
+    id 'maven-publish'
 }
 
-plugins {
-	id 'fabric-loom' version '1.17-SNAPSHOT'
-	id 'maven-publish'
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
 }
 
 loom {
-    runs {
-        client {
-            vmArgs "-Dfabric.development=true"
+    splitEnvironmentSourceSets()
+
+    mods {
+        "ironfurnaces" {
+            sourceSet sourceSets.main
+            sourceSet sourceSets.client
         }
     }
 }
 
-repositories {
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
 
-	maven {
-		name = "Modmuss50"
-		url = "https://maven.modmuss50.me/"
-	}
-	maven {
-		url = "https://www.cursemaven.com"
-		content {
-			includeGroup "curse.maven"
-		}
-	}
-	maven {
-		url = "https://maven.shedaniel.me/"
-	}
-	maven {
-		url = "https://jitpack.io"
-		content {
-			includeGroup "com.github.dexman545"
-			includeGroup "com.github.emilyploszaj"
-			includeGroup "io.github.onyxstudios.Cardinal-Components-API"
-		}
-	}
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 }
 
 java {
-	sourceCompatibility = JavaVersion.VERSION_25
-	targetCompatibility = JavaVersion.VERSION_25
+    withSourcesJar()
+
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
 }
 
-base {
-	archivesName = project.archives_base_name
-}
-version = project.minecraft_version + "-" + project.mod_version + "-fabric"
-group = project.maven_group
-
-
-dependencies {
-	//to change the versions see the gradle.properties file
-	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-
-	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
-
-	/**
-	 def rcVersion = 'RebornCore:RebornCore-1.16:+'
-	 modApi (rcVersion) {
-	 exclude group: "net.fabricmc.fabric-api"
-	 }
-
-
-	 def rcVersion2 = 'TechReborn:TechReborn-1.16:+'
-	 modApi (rcVersion2) {
-	 exclude group: "net.fabricmc.fabric-api"
-	 }
-
-	 **/
-
-
-	api "teamreborn:energy:${project.energy_api_version}"
-	include "teamreborn:energy:${project.energy_api_version}"
-
-	// optionalDependency "me.shedaniel:RoughlyEnoughItems-fabric:6.0.264-alpha"
-
-}
-
-def optionalDependency(String dep) {
-	dependencies.runtimeOnly (dep) {
-		exclude group: "net.fabricmc.fabric-api"
-		exclude module: "nbt-crafting"
-	}
-	dependencies.compileOnly (dep) {
-		exclude group: "net.fabricmc.fabric-api"
-		exclude module: "nbt-crafting"
-	}
-}
-
-processResources {
-	inputs.property "version", project.version
-
-	filesMatching("fabric.mod.json") {
-		expand "version": project.version
-	}
-}
-
-// ensure that the encoding is set to UTF-8, no matter what the system default is
-// this fixes some edge cases with special characters not displaying correctly
-// see http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html
 tasks.withType(JavaCompile).configureEach {
-	// ensure that the encoding is set to UTF-8, no matter what the system default is
-	// this fixes some edge cases with special characters not displaying correctly
-	// see http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html
-	// If Javadoc is generated, this must be specified in that task too.
-	it.options.encoding = "UTF-8"
-
-	// Minecraft 26.2 upwards uses Java 25.
-	it.options.release = 25
-}
-
-// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-// if it is present.
-// If you remove this task, sources will not be generated.
-task sourcesJar(type: Jar, dependsOn: classes) {
-	archiveClassifier = "sources"
-	from sourceSets.main.allSource
-}
-
-jar {
-	from "LICENSE"
-}
-
-sourceSets {
-	main {
-		java {
-			exclude 'ironfurnaces/rei/**'
-		}
-	}
-}
-
-// configure the maven publication
-publishing {
-	publications {
-		mavenJava(MavenPublication) {
-			artifact(jar)
-			artifact(sourcesJar)
-		}
-	}
-
-	// select the repositories you want to publish to
-	repositories {
-		// uncomment to publish to the local maven
-		// mavenLocal()
-	}
+    it.options.release = 25
+    it.options.encoding = "UTF-8"
 }

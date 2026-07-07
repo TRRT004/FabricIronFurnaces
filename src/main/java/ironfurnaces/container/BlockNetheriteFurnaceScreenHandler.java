@@ -13,7 +13,7 @@ public class BlockNetheriteFurnaceScreenHandler extends BlockIronFurnaceScreenHa
         super(Reference.NETHERITE_FURNACE_SCREEN_HANDLER, syncId, playerInventory, pos);
     }
 
-    public BlockNetheriteFurnaceScreenHandler(int syncId, net.minecraft.world.entity.player.Inventory playerInventory, net.minecraft.world.entity.player.Inventory inventory, ContainerData propertyDelegate) {
+    public BlockNetheriteFurnaceScreenHandler(int syncId, net.minecraft.world.entity.player.Inventory playerInventory, net.minecraft.world.Container inventory, ContainerData propertyDelegate) {
         super(Reference.NETHERITE_FURNACE_SCREEN_HANDLER, syncId, playerInventory, inventory, propertyDelegate);
     }
 }

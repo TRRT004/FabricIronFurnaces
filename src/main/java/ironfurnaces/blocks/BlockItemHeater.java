@@ -1,6 +1,5 @@
 package ironfurnaces.blocks;
 
-import ironfurnaces.IronFurnacesClient;
 import ironfurnaces.init.Reference;
 import ironfurnaces.items.ItemEnergyDisplay;
 import ironfurnaces.util.StringHelper;
@@ -38,7 +37,7 @@ public class BlockItemHeater extends BlockItem implements ItemEnergyDisplay {
         {
             tooltip.accept(Component.literal(StringHelper.displayEnergy(customData.copyTag().getDouble("energy").orElse(0.0), capacity).get(0)).withStyle(ChatFormatting.GOLD));
         }
-        if (IronFurnacesClient.isShiftKeyDown())
+        if (StringHelper.isShiftKeyDown())
         {
             tooltip.accept(Component.translatable("tooltip." + Reference.MOD_ID + ".heater_block").withStyle(ChatFormatting.GRAY));
             tooltip.accept(Component.translatable("tooltip." + Reference.MOD_ID + ".heater_block1").withStyle(ChatFormatting.GRAY));

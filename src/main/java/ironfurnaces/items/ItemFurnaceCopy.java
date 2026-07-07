@@ -48,21 +48,21 @@ public class ItemFurnaceCopy extends Item {
     }
 
     @Override
-    public InteractionResult useOnBlock(UseOnContext ctx) {
+    public InteractionResult useOn(UseOnContext ctx) {
         Level world = ctx.getLevel();
-        BlockPos pos = ctx.getBlockPos();
-        if (!ctx.getPlayer().isSneaking())
+        BlockPos pos = ctx.getClickedPos();
+        if (!ctx.getPlayer().isShiftKeyDown())
         {
-            return super.useOnBlock(ctx);
+            return super.useOn(ctx);
         }
         if (!world.isClientSide()) {
             BlockEntity te = world.getBlockEntity(pos);
 
             if (!(te instanceof BlockIronFurnaceTileBase)) {
-                return super.useOnBlock(ctx);
+                return super.useOn(ctx);
             }
 
-            ItemStack stack = ctx.getItem();
+            ItemStack stack = ctx.getItemInHand();
             net.minecraft.world.item.component.CustomData customData = stack.get(net.minecraft.core.component.DataComponents.CUSTOM_DATA);
             if (customData != null)
             {
@@ -70,10 +70,10 @@ public class ItemFurnaceCopy extends Item {
                 for (int i = 0; i < settings.length; i++)
                     ((BlockIronFurnaceTileBase) te).furnaceSettings.set(i, settings[i]);
             }
-            world.updateListeners(pos, world.getBlockState(pos).getBlock().defaultBlockState(), world.getBlockState(pos), 3);
-            ctx.getPlayer().sendMessage(Component.literal("Settings applied"), true);
+            world.sendBlockUpdated(pos, world.getBlockState(pos), world.getBlockState(pos), 3);
+            ctx.getPlayer().sendSystemMessage(Component.literal("Settings applied"));
         }
 
-        return super.useOnBlock(ctx);
+        return super.useOn(ctx);
     }
 }

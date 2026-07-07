@@ -38,14 +38,6 @@ public class IronFurnacesConfig {
             comment = " Number of ticks to complete one smelting operation.\n 200 ticks is what a regular furnace takes.\n Default: 140")
     public static int silverFurnaceSpeed = 140;
 
-    @Config(config = "ironfurnaces", category = "rei", key = "enable_catalysts",
-            comment = " Enables or disables the recpie catalysts in REI.\n Default: true")
-    public static boolean enableCatalysts = true;
-
-    @Config(config = "ironfurnaces", category = "rei", key = "enable_click_area",
-            comment = " Enables or disables the click area in the furance gui for REI.\n Default: true")
-    public static boolean enableClickArea = true;
-
     @Config(config = "ironfurnaces", category = "furnaces", key = "furnaceXPDropValue",
             comment = " This value indicates when the furnace should 'overload' and spit out the xp stored. \n Default: 10, Recipes")
     public static int furnaceXPDropValue = 10;
