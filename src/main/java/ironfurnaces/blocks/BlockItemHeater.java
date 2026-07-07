@@ -8,18 +8,12 @@ import net.fabricmc.api.Environment;
 import net.minecraft.world.level.block.Block;
 
 import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Item;
 
-import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.Component;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.NonNullList;
-import net.minecraft.world.level.Level;
-
-import java.util.List;
 
 public class BlockItemHeater extends BlockItem implements ItemEnergyDisplay {
     public BlockItemHeater(Block block, Item.Properties properties) {
@@ -31,6 +25,7 @@ public class BlockItemHeater extends BlockItem implements ItemEnergyDisplay {
 
     @Override
     @Environment(EnvType.CLIENT)
+    // Overriding appendHoverText is deprecated in Minecraft, but it remains the standard method to dynamically populate item tooltips.
     public void appendHoverText(ItemStack stack, Item.TooltipContext context, net.minecraft.world.item.component.TooltipDisplay display, java.util.function.Consumer<Component> tooltip, net.minecraft.world.item.TooltipFlag flag) {
         net.minecraft.world.item.component.CustomData customData = stack.get(net.minecraft.core.component.DataComponents.CUSTOM_DATA);
         if (customData != null)
