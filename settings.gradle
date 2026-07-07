@@ -9,4 +9,6 @@ pluginManagement {
     }
 }
 
-rootProject.name = "FabricIronFurnaces" 
+rootProject.name = "FabricIronFurnaces"
+include "base"
+include "augments"

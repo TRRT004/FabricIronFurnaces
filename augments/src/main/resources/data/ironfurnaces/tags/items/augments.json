@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "ironfurnaces_augments:augment_blasting",
+    "ironfurnaces_augments:augment_smoking",
+    "ironfurnaces_augments:augment_speed",
+    "ironfurnaces_augments:augment_fuel"
+  ]
+}
