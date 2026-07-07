@@ -35,9 +35,8 @@ public class BlockCrystalFurnace extends BlockIronFurnaceBase {
 
 
     public BlockCrystalFurnace() {
-        super(BlockBehaviour.Properties.ofFullCopy(Blocks.PRISMARINE).noOcclusion());
+        super(BlockBehaviour.Properties.ofFullCopy(Blocks.PRISMARINE).noOcclusion().setId(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.BLOCK, net.minecraft.resources.Identifier.fromNamespaceAndPath(Reference.MOD_ID, CRYSTAL_FURNACE))));
         this.registerDefaultState(this.defaultBlockState().setValue(BlockStateProperties.LIT, false).setValue(WATERLOGGED, Boolean.valueOf(false)));
-
     }
 
     @Override

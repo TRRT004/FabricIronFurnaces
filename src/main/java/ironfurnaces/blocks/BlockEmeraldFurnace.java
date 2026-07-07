@@ -18,7 +18,7 @@ public class BlockEmeraldFurnace extends BlockIronFurnaceBase {
     public static final String EMERALD_FURNACE = "emerald_furnace";
 
     public BlockEmeraldFurnace() {
-        super(BlockBehaviour.Properties.ofFullCopy(Blocks.EMERALD_BLOCK));
+        super(BlockBehaviour.Properties.ofFullCopy(Blocks.EMERALD_BLOCK).setId(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.BLOCK, net.minecraft.resources.Identifier.fromNamespaceAndPath(Reference.MOD_ID, EMERALD_FURNACE))));
     }
 
     @Nullable

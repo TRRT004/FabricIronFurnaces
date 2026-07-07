@@ -17,6 +17,9 @@ import java.util.List;
 
 public class ItemAugmentBlasting extends ItemAugment {
 
+    public ItemAugmentBlasting() {
+        super("augment_blasting");
+    }
 
     @Environment(EnvType.CLIENT)
     @Override

@@ -20,7 +20,7 @@ public class ItemHeater extends Item {
 
 
     public ItemHeater() {
-        super(new Item.Properties());
+        super(new Item.Properties().setId(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.ITEM, net.minecraft.resources.Identifier.fromNamespaceAndPath(Reference.MOD_ID, "item_heater"))));
     }
 
     @Environment(EnvType.CLIENT)

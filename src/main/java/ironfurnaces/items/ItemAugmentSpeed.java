@@ -16,6 +16,9 @@ import java.util.List;
 
 public class ItemAugmentSpeed extends ItemAugment {
 
+    public ItemAugmentSpeed() {
+        super("augment_speed");
+    }
 
     @Environment(EnvType.CLIENT)
     @Override

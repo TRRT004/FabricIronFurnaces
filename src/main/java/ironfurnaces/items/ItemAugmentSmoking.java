@@ -16,6 +16,9 @@ import java.util.List;
 
 public class ItemAugmentSmoking extends ItemAugment {
 
+    public ItemAugmentSmoking() {
+        super("augment_smoking");
+    }
 
     @Environment(EnvType.CLIENT)
     @Override

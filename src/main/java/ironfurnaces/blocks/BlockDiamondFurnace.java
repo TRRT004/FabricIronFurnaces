@@ -24,7 +24,7 @@ public class BlockDiamondFurnace extends BlockIronFurnaceBase {
     public static final String DIAMOND_FURNACE = "diamond_furnace";
 
     public BlockDiamondFurnace() {
-        super(BlockBehaviour.Properties.ofFullCopy(Blocks.DIAMOND_BLOCK));
+        super(BlockBehaviour.Properties.ofFullCopy(Blocks.DIAMOND_BLOCK).setId(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.BLOCK, net.minecraft.resources.Identifier.fromNamespaceAndPath(Reference.MOD_ID, DIAMOND_FURNACE))));
     }
 
     @Nullable

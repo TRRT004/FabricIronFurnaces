@@ -29,7 +29,7 @@ public class BlockNetheriteFurnace extends BlockIronFurnaceBase {
     public static final String NETHERITE_FURNACE = "netherite_furnace";
 
     public BlockNetheriteFurnace() {
-        super(BlockBehaviour.Properties.ofFullCopy(Blocks.NETHERITE_BLOCK).destroyTime(50.0F).explosionResistance(6000.0F));
+        super(BlockBehaviour.Properties.ofFullCopy(Blocks.NETHERITE_BLOCK).destroyTime(50.0F).explosionResistance(6000.0F).setId(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.BLOCK, net.minecraft.resources.Identifier.fromNamespaceAndPath(Reference.MOD_ID, NETHERITE_FURNACE))));
     }
 
     @Environment(EnvType.CLIENT)

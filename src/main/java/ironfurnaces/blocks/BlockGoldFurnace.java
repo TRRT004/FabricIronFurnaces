@@ -24,7 +24,7 @@ public class BlockGoldFurnace extends BlockIronFurnaceBase {
     public static final String GOLD_FURNACE = "gold_furnace";
 
     public BlockGoldFurnace() {
-        super(BlockBehaviour.Properties.ofFullCopy(Blocks.GOLD_BLOCK));
+        super(BlockBehaviour.Properties.ofFullCopy(Blocks.GOLD_BLOCK).setId(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.BLOCK, net.minecraft.resources.Identifier.fromNamespaceAndPath(Reference.MOD_ID, GOLD_FURNACE))));
     }
 
     @Nullable

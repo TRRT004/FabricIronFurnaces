@@ -23,7 +23,7 @@ public class ItemFurnaceCopy extends Item {
 
 
     public ItemFurnaceCopy() {
-        super(new Item.Properties());
+        super(new Item.Properties().setId(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.ITEM, net.minecraft.resources.Identifier.fromNamespaceAndPath(Reference.MOD_ID, "item_copy"))));
     }
 
     @Environment(EnvType.CLIENT)

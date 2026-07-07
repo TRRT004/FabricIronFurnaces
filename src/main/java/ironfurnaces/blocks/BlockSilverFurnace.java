@@ -20,7 +20,7 @@ public class BlockSilverFurnace extends BlockIronFurnaceBase {
     public static final String SILVER_FURNACE = "silver_furnace";
 
     public BlockSilverFurnace() {
-        super(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK));
+        super(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK).setId(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.BLOCK, net.minecraft.resources.Identifier.fromNamespaceAndPath(Reference.MOD_ID, SILVER_FURNACE))));
     }
 
 
