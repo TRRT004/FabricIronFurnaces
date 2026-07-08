@@ -8,9 +8,10 @@ import ironfurnaces.tileentity.BlockIronFurnaceTileBase;
 import ironfurnaces.util.StringHelper;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.client.gui.screens.inventory.AbstractRecipeBookScreen;
+import net.minecraft.client.gui.screens.recipebook.RecipeBookComponent;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.sounds.SoundEvents;
 
@@ -26,7 +27,7 @@ import java.util.Optional;
 
 public abstract class BlockIronFurnaceScreenBase<T extends BlockIronFurnaceScreenHandlerBase>
 		extends
-			AbstractContainerScreen<T> {
+			AbstractRecipeBookScreen<T> {
 
 	public static Identifier GUI;
 	public static final Identifier WIDGETS = net.minecraft.resources.Identifier.fromNamespaceAndPath(Reference.MOD_ID,
@@ -44,7 +45,12 @@ public abstract class BlockIronFurnaceScreenBase<T extends BlockIronFurnaceScree
 
 	public BlockIronFurnaceScreenBase(T handler, net.minecraft.world.entity.player.Inventory inv, Component name,
 			Identifier gui) {
-		super(handler, inv, name);
+		super(handler, new net.minecraft.client.gui.screens.recipebook.IronFurnaceRecipeBookComponent(handler, java.util.List.of(
+			new RecipeBookComponent.TabInfo(net.minecraft.client.gui.screens.recipebook.SearchRecipeBookCategory.FURNACE),
+			new RecipeBookComponent.TabInfo(net.minecraft.world.item.Items.BREAD, net.minecraft.world.item.crafting.RecipeBookCategories.FURNACE_FOOD),
+			new RecipeBookComponent.TabInfo(net.minecraft.world.item.Items.IRON_INGOT, net.minecraft.world.item.crafting.RecipeBookCategories.FURNACE_BLOCKS),
+			new RecipeBookComponent.TabInfo(net.minecraft.world.item.Items.LAVA_BUCKET, net.minecraft.world.item.crafting.RecipeBookCategories.FURNACE_MISC)
+		)), inv, name);
 		this.handler = handler;
 		playerInv = inv;
 		this.name = name;
@@ -57,24 +63,25 @@ public abstract class BlockIronFurnaceScreenBase<T extends BlockIronFurnaceScree
 	}
 
 	@Override
+	protected net.minecraft.client.gui.navigation.ScreenPosition getRecipeBookButtonPosition() {
+		return new net.minecraft.client.gui.navigation.ScreenPosition(this.leftPos + 20, this.height / 2 - 49);
+	}
+
+	@Override
 	public void extractRenderState(net.minecraft.client.gui.GuiGraphicsExtractor extractor, int mouseX, int mouseY,
 			float partialTick) {
-		this.extractBackground(extractor, mouseX, mouseY, partialTick);
 		super.extractRenderState(extractor, mouseX, mouseY, partialTick);
 		this.extractTooltip(extractor, mouseX, mouseY);
 	}
 
 	@Override
 	protected void extractLabels(net.minecraft.client.gui.GuiGraphicsExtractor extractor, int mouseX, int mouseY) {
-		// drawString(matrices, this.font, "Energy: " + container.getEnergy(), 10, 10,
-		// 0xffffff);
-		extractor.text(this.font, this.playerInv.getDisplayName(), 7, this.imageHeight - 93, 4210752);
-		extractor.text(this.font, name, 7 + this.imageWidth / 2 - this.font.width(name) / 2, 6, 4210752);
+		super.extractLabels(extractor, mouseX, mouseY);
 
 		if (showInventoryButtons(handler).get() && getRedstoneMode(handler).get() == 4) {
 			int comSub = getComSub(handler).get();
 			int i = comSub > 9 ? 28 : 31;
-			extractor.text(this.font, comSub + "", i - 42, 90, 4210752);
+			extractor.text(this.font, comSub + "", i - 42, 90, 4210752, false);
 		}
 		int actualMouseX = mouseX - ((this.width - this.imageWidth) / 2);
 		int actualMouseY = mouseY - ((this.height - this.imageHeight) / 2);
@@ -398,11 +405,11 @@ public abstract class BlockIronFurnaceScreenBase<T extends BlockIronFurnaceScree
 	}
 
 	@Override
-	public void extractContents(net.minecraft.client.gui.GuiGraphicsExtractor extractor, int mouseX, int mouseY,
+	public void extractBackground(net.minecraft.client.gui.GuiGraphicsExtractor extractor, int mouseX, int mouseY,
 			float partialTick) {
-
-		int i = (this.width - this.imageWidth) / 2;
-		int j = (this.height - this.imageHeight) / 2;
+		super.extractBackground(extractor, mouseX, mouseY, partialTick);
+		int i = this.leftPos;
+		int j = this.topPos;
 		this.blit(extractor, BlockIronFurnaceScreenBase.GUI, i, j, this.imageWidth, this.imageHeight, (float) (0),
 				(float) (0), (float) (this.imageWidth), (float) (this.imageHeight));
 
@@ -416,9 +423,14 @@ public abstract class BlockIronFurnaceScreenBase<T extends BlockIronFurnaceScree
 		k = ((BlockIronFurnaceScreenHandlerBase) this.handler).getCookProgress();
 		this.blit(extractor, BlockIronFurnaceScreenBase.GUI, i + 79, j + 34, k + 1, 16, (float) (176), (float) (14),
 				(float) (k + 1), (float) (16));
+	}
 
-		int actualMouseX = mouseX - ((this.width - this.imageWidth) / 2);
-		int actualMouseY = mouseY - ((this.height - this.imageHeight) / 2);
+	@Override
+	public void extractContents(net.minecraft.client.gui.GuiGraphicsExtractor extractor, int mouseX, int mouseY,
+			float partialTick) {
+
+		int actualMouseX = mouseX - this.leftPos;
+		int actualMouseY = mouseY - this.topPos;
 
 		this.addInventoryButtons(extractor, ((BlockIronFurnaceScreenHandlerBase) this.handler), actualMouseX,
 				actualMouseY);

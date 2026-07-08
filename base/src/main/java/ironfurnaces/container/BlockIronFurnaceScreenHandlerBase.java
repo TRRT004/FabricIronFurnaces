@@ -8,7 +8,8 @@ import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.*;
-import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.RecipeBookMenu;
+import net.minecraft.world.inventory.RecipeBookType;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.inventory.Slot;
@@ -18,7 +19,7 @@ import net.minecraft.world.entity.player.StackedItemContents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 
-public abstract class BlockIronFurnaceScreenHandlerBase extends AbstractContainerMenu {
+public abstract class BlockIronFurnaceScreenHandlerBase extends RecipeBookMenu {
 
 	private final Container inventory;
 	private final ContainerData propertyDelegate;
@@ -211,6 +212,42 @@ public abstract class BlockIronFurnaceScreenHandlerBase extends AbstractContaine
 
 	public Level getLevel() {
 		return world;
+	}
+
+	@Override
+	// Suppress unchecked and rawtypes warnings due to raw type signatures in net.minecraft.recipebook.ServerPlaceRecipe.placeRecipe and wildcard mismatches
+	@SuppressWarnings({"unchecked", "rawtypes"})
+	public RecipeBookMenu.PostPlaceAction handlePlacement(boolean placeAll, boolean isCreative, RecipeHolder<?> recipe, net.minecraft.server.level.ServerLevel level, net.minecraft.world.entity.player.Inventory inventory) {
+		java.util.List<Slot> craftSlots = java.util.List.of(this.getSlot(0), this.getSlot(2));
+		return net.minecraft.recipebook.ServerPlaceRecipe.placeRecipe(new net.minecraft.recipebook.ServerPlaceRecipe.CraftingMenuAccess() {
+			@Override
+			public void clearCraftingContent() {
+				BlockIronFurnaceScreenHandlerBase.this.getSlot(0).set(ItemStack.EMPTY);
+				BlockIronFurnaceScreenHandlerBase.this.getSlot(2).set(ItemStack.EMPTY);
+			}
+
+			@Override
+			public boolean recipeMatches(RecipeHolder recipe) {
+				return ((Recipe<net.minecraft.world.item.crafting.SingleRecipeInput>) recipe.value()).matches(new net.minecraft.world.item.crafting.SingleRecipeInput(BlockIronFurnaceScreenHandlerBase.this.getSlot(0).getItem()), BlockIronFurnaceScreenHandlerBase.this.world);
+			}
+
+			@Override
+			public void fillCraftSlotsStackedContents(StackedItemContents contents) {
+				BlockIronFurnaceScreenHandlerBase.this.fillCraftSlotsStackedContents(contents);
+			}
+		}, 1, 1, java.util.List.of(this.getSlot(0)), craftSlots, inventory, (RecipeHolder) recipe, placeAll, isCreative);
+	}
+
+	@Override
+	public RecipeBookType getRecipeBookType() {
+		return RecipeBookType.FURNACE;
+	}
+
+	@Override
+	public void fillCraftSlotsStackedContents(StackedItemContents contents) {
+		if (this.inventory instanceof StackedContentsCompatible) {
+			((StackedContentsCompatible) this.inventory).fillStackedContents(contents);
+		}
 	}
 
 }
