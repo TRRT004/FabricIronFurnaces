@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "id": "ironfurnaces-test",
+  "version": "1.0.0",
+  "name": "Fabric Iron Furnaces - Integration Tests",
+  "environment": "*",
+  "entrypoints": {
+    "fabric-gametest": [
+      "ironfurnaces.tests.FurnaceIntegrationTests"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.15.0",
+    "fabric-api": "*",
+    "ironfurnaces": "*"
+  }
+}
