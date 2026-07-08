@@ -16,7 +16,7 @@ import net.minecraft.world.level.Level;
 
 import java.util.List;
 
-public class ItemHeater extends Item {
+public class ItemHeater extends Item implements ironfurnaces.api.IHeaterItem {
 
 
     public ItemHeater() {

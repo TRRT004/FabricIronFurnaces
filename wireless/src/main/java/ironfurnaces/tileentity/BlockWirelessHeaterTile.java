@@ -3,6 +3,7 @@ package ironfurnaces.tileentity;
 import ironfurnaces.container.BlockWirelessHeaterScreenHandler;
 import ironfurnaces.init.Reference;
 import ironfurnaces.items.ItemHeater;
+import ironfurnaces.wireless.IronFurnacesWireless;
 
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.entity.player.Player;
@@ -26,15 +27,13 @@ import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.item.ItemEntity;
 
 
-
-
-public class BlockWirelessHeaterTile extends TileEntityInventory implements net.fabricmc.fabric.api.menu.v1.ExtendedMenuProvider<BlockPos> {
+public class BlockWirelessHeaterTile extends TileEntityInventory implements net.fabricmc.fabric.api.menu.v1.ExtendedMenuProvider<BlockPos>, ironfurnaces.api.IHeaterSource {
 
     private double energy;
     private int capacity = 100000;
 
     public BlockWirelessHeaterTile(BlockPos pos, BlockState state) {
-        super(Reference.WIRELESS_HEATER_TILE, pos, state, 1);
+        super(IronFurnacesWireless.WIRELESS_HEATER_TILE, pos, state, 1);
     }
 
     public double getEnergy()
@@ -115,8 +114,6 @@ public class BlockWirelessHeaterTile extends TileEntityInventory implements net.
         return this.worldPosition;
     }
 
-    
-
     public void extractEnergy(double amount) {
         this.energy -= Math.min(amount, this.energy);
         this.setChanged();
@@ -140,8 +137,6 @@ public class BlockWirelessHeaterTile extends TileEntityInventory implements net.
         return capacity;
     }
 
-    
-
     @Override
     public void setChanged() {
         super.setChanged();
@@ -154,7 +149,7 @@ public class BlockWirelessHeaterTile extends TileEntityInventory implements net.
     public void preRemoveSideEffects(BlockPos pos, BlockState state) {
         super.preRemoveSideEffects(pos, state);
         if (this.level != null && !this.level.isClientSide()) {
-            ItemStack stack = new ItemStack(Reference.WIRELESS_HEATER);
+            ItemStack stack = new ItemStack(IronFurnacesWireless.WIRELESS_HEATER);
             net.minecraft.world.item.component.CustomData.update(
                 net.minecraft.core.component.DataComponents.CUSTOM_DATA,
                 stack,

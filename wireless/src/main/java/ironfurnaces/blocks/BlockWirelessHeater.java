@@ -4,6 +4,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import ironfurnaces.init.Reference;
 import ironfurnaces.tileentity.BlockIronFurnaceTileBase;
 import ironfurnaces.tileentity.BlockWirelessHeaterTile;
+import ironfurnaces.wireless.IronFurnacesWireless;
 
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.*;
@@ -26,7 +27,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
-
 import java.util.Random;
 
 public class BlockWirelessHeater extends Block implements EntityBlock {
@@ -44,7 +44,7 @@ public class BlockWirelessHeater extends Block implements EntityBlock {
 
     @Nullable
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level world, BlockState state, BlockEntityType<T> type) {
-        return checkType(world, type, Reference.WIRELESS_HEATER_TILE);
+        return checkType(world, type, IronFurnacesWireless.WIRELESS_HEATER_TILE);
     }
 
     @Nullable

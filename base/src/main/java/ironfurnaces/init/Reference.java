@@ -68,12 +68,9 @@ public class Reference {
     public static BlockEntityType<BlockSilverFurnaceTile> SILVER_FURNACE_TILE;
     public static MenuType<BlockSilverFurnaceScreenHandler> SILVER_FURNACE_SCREEN_HANDLER;
 
-    public static final BlockWirelessHeater WIRELESS_HEATER = new BlockWirelessHeater();
-    public static BlockEntityType<BlockWirelessHeaterTile> WIRELESS_HEATER_TILE;
-    public static MenuType<BlockWirelessHeaterScreenHandler> WIRELESS_HEATER_SCREEN_HANDLER;
 
 
-    public static final ItemHeater HEATER = new ItemHeater();
+
 
     public static final net.minecraft.tags.TagKey<Item> AUGMENT_TAG = net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.ITEM, Identifier.fromNamespaceAndPath(MOD_ID, "augments"));
     public static final net.minecraft.tags.TagKey<Item> BLASTING_AUGMENT_TAG = net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.ITEM, Identifier.fromNamespaceAndPath(MOD_ID, "augments/blasting"));
@@ -83,7 +80,7 @@ public class Reference {
 
     public static final ItemSpooky SPOOKY = new ItemSpooky(new Item.Properties().setId(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.ITEM, net.minecraft.resources.Identifier.fromNamespaceAndPath(MOD_ID, "item_spooky"))));
     public static final ItemXmas XMAS = new ItemXmas(new Item.Properties().setId(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.ITEM, net.minecraft.resources.Identifier.fromNamespaceAndPath(MOD_ID, "item_xmas"))));
-    public static final ItemFurnaceCopy COPY = new ItemFurnaceCopy();
+
 
     public static final CreativeModeTab itemGroup = Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB,
             Identifier.fromNamespaceAndPath(MOD_ID, "general"),
@@ -100,24 +97,10 @@ public class Reference {
                     entries.accept(NETHERITE_FURNACE);
                     entries.accept(COPPER_FURNACE);
                     entries.accept(SILVER_FURNACE);
-                    ItemStack unchargedHeater = new ItemStack(WIRELESS_HEATER);
-                    net.minecraft.world.item.component.CustomData.update(
-                        net.minecraft.core.component.DataComponents.CUSTOM_DATA,
-                        unchargedHeater,
-                        tag -> tag.putInt("energy", 0)
-                    );
-                    entries.accept(unchargedHeater);
-                    ItemStack chargedHeater = new ItemStack(WIRELESS_HEATER);
-                    net.minecraft.world.item.component.CustomData.update(
-                        net.minecraft.core.component.DataComponents.CUSTOM_DATA,
-                        chargedHeater,
-                        tag -> tag.putInt("energy", 100000)
-                    );
-                    entries.accept(chargedHeater);
-                    entries.accept(HEATER);
+
                     entries.accept(SPOOKY);
                     entries.accept(XMAS);
-                    entries.accept(COPY);
+
                 })
                 .build()
     );
@@ -169,15 +152,10 @@ public class Reference {
         SILVER_FURNACE_TILE = Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, Identifier.fromNamespaceAndPath(Reference.MOD_ID, BlockSilverFurnace.SILVER_FURNACE), new BlockEntityType<>(BlockSilverFurnaceTile::new, java.util.Set.of(SILVER_FURNACE)));
         SILVER_FURNACE_SCREEN_HANDLER = Registry.register(BuiltInRegistries.MENU, Identifier.fromNamespaceAndPath(Reference.MOD_ID, BlockSilverFurnace.SILVER_FURNACE), new net.fabricmc.fabric.api.menu.v1.ExtendedMenuType<>(BlockSilverFurnaceScreenHandler::new, BlockPos.STREAM_CODEC));
 
-        Registry.register(BuiltInRegistries.BLOCK, Identifier.fromNamespaceAndPath(Reference.MOD_ID, BlockWirelessHeater.HEATER), WIRELESS_HEATER);
-        Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(Reference.MOD_ID, BlockWirelessHeater.HEATER), new BlockItemHeater(WIRELESS_HEATER, new Item.Properties().setId(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.ITEM, net.minecraft.resources.Identifier.fromNamespaceAndPath(Reference.MOD_ID, BlockWirelessHeater.HEATER)))));
-        WIRELESS_HEATER_TILE = Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, Identifier.fromNamespaceAndPath(Reference.MOD_ID, BlockWirelessHeater.HEATER), new BlockEntityType<>(BlockWirelessHeaterTile::new, java.util.Set.of(WIRELESS_HEATER)));
-        WIRELESS_HEATER_SCREEN_HANDLER = Registry.register(BuiltInRegistries.MENU, Identifier.fromNamespaceAndPath(Reference.MOD_ID, BlockWirelessHeater.HEATER), new net.fabricmc.fabric.api.menu.v1.ExtendedMenuType<>(BlockWirelessHeaterScreenHandler::new, BlockPos.STREAM_CODEC));
 
-        registerItem("item_heater", HEATER);
         registerItem("item_spooky", SPOOKY);
         registerItem("item_xmas", XMAS);
-        registerItem("item_copy", COPY);
+
 
         // Augments are registered in the addon mod
 

@@ -103,6 +103,9 @@ public abstract class BlockIronFurnaceScreenBase<T extends BlockIronFurnaceScree
     }
 
     private static Optional<Boolean> showInventoryButtons(AbstractContainerMenu handler) {
+        if (!net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("ironfurnaces_automation")) {
+            return Optional.of(false);
+        }
         if (handler instanceof BlockIronFurnaceScreenHandlerBase) {
             BlockPos pos = ((BlockIronFurnaceScreenHandlerBase) handler).getPos();
             Level world = ((BlockIronFurnaceScreenHandlerBase) handler).getLevel();
@@ -113,6 +116,9 @@ public abstract class BlockIronFurnaceScreenBase<T extends BlockIronFurnaceScree
     }
 
     private static Optional<Integer> getRedstoneMode(AbstractContainerMenu handler) {
+        if (!net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("ironfurnaces_automation")) {
+            return Optional.of(0);
+        }
         if (handler instanceof BlockIronFurnaceScreenHandlerBase) {
             BlockPos pos = ((BlockIronFurnaceScreenHandlerBase) handler).getPos();
             Level world = ((BlockIronFurnaceScreenHandlerBase) handler).getLevel();
@@ -123,6 +129,9 @@ public abstract class BlockIronFurnaceScreenBase<T extends BlockIronFurnaceScree
     }
 
     private static Optional<Integer> getComSub(AbstractContainerMenu handler) {
+        if (!net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("ironfurnaces_automation")) {
+            return Optional.of(0);
+        }
         if (handler instanceof BlockIronFurnaceScreenHandlerBase) {
             BlockPos pos = ((BlockIronFurnaceScreenHandlerBase) handler).getPos();
             Level world = ((BlockIronFurnaceScreenHandlerBase) handler).getLevel();
@@ -573,7 +582,9 @@ public abstract class BlockIronFurnaceScreenBase<T extends BlockIronFurnaceScree
     public void sendServer(int index, int value)
     {
         BlockPos pos = getBlockPos(handler).get();
-        ClientPlayNetworking.send(new ironfurnaces.network.FurnaceSettingsPayload(pos, index, value));
+        if (ironfurnaces.api.AutomationAPI.clientHelper != null) {
+            ironfurnaces.api.AutomationAPI.clientHelper.sendSettingsPacket(pos, index, value);
+        }
     }
 
     public void mouseClickedInventoryButtons(int button, BlockIronFurnaceScreenHandlerBase container, double mouseX, double mouseY) {

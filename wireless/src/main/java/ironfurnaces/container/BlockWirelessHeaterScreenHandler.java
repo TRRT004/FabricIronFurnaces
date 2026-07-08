@@ -1,6 +1,6 @@
 package ironfurnaces.container;
 
-import ironfurnaces.init.Reference;
+import ironfurnaces.wireless.IronFurnacesWireless;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.Container;
@@ -27,7 +27,7 @@ public class BlockWirelessHeaterScreenHandler extends AbstractContainerMenu {
     }
 
     public BlockWirelessHeaterScreenHandler(int syncId, net.minecraft.world.entity.player.Inventory playerInventory, Container inventory) {
-        super(Reference.WIRELESS_HEATER_SCREEN_HANDLER, syncId);
+        super(IronFurnacesWireless.WIRELESS_HEATER_SCREEN_HANDLER, syncId);
         checkContainerSize(inventory, 1);
         this.inventory = inventory;
         inventory.startOpen(playerInventory.player);

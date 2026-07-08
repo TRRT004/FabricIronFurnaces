@@ -16,10 +16,13 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.InteractionHand;
 
 import java.util.List;
 
-public class ItemFurnaceCopy extends Item {
+public class ItemFurnaceCopy extends Item implements ironfurnaces.api.ICopierItem {
 
 
     public ItemFurnaceCopy() {
@@ -75,5 +78,28 @@ public class ItemFurnaceCopy extends Item {
         }
 
         return super.useOn(ctx);
+    }
+
+    @Override
+    public InteractionResult interactCopy(Level world, BlockPos pos, Player player, InteractionHand handIn) {
+        ItemStack stack = player.getItemInHand(handIn);
+        BlockEntity te = world.getBlockEntity(pos);
+        if (!(te instanceof BlockIronFurnaceTileBase)) {
+            return InteractionResult.SUCCESS;
+        }
+
+        int[] settings = new int[((BlockIronFurnaceTileBase) te).furnaceSettings.size()];
+        for (int i = 0; i < ((BlockIronFurnaceTileBase) te).furnaceSettings.size(); i++)
+        {
+            settings[i] = ((BlockIronFurnaceTileBase) te).furnaceSettings.get(i);
+        }
+        
+        CompoundTag tag = stack.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
+        tag.putIntArray("settings", settings);
+        stack.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.of(tag));
+
+        ((BlockIronFurnaceTileBase)te).onUpdateSent();
+        player.sendSystemMessage(Component.literal("Settings copied"));
+        return InteractionResult.SUCCESS;
     }
 }

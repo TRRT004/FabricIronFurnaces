@@ -1,7 +1,6 @@
 package ironfurnaces.blocks;
 
 import ironfurnaces.init.Reference;
-import ironfurnaces.items.ItemFurnaceCopy;
 import ironfurnaces.items.ItemSpooky;
 import ironfurnaces.items.ItemXmas;
 import ironfurnaces.tileentity.BlockIronFurnaceTileBase;
@@ -148,9 +147,8 @@ public abstract class BlockIronFurnaceBase extends Block implements EntityBlock 
             if (stack.is(Reference.AUGMENT_TAG) && !player.isSecondaryUseActive()) {
                 this.interactAugment(world, pos, player, hand);
                 return InteractionResult.CONSUME;
-            } else if (stack.getItem() instanceof ItemFurnaceCopy && !player.isSecondaryUseActive()) {
-                this.interactCopy(world, pos, player, hand);
-                return InteractionResult.CONSUME;
+            } else if (stack.getItem() instanceof ironfurnaces.api.ICopierItem copier && !player.isSecondaryUseActive()) {
+                return copier.interactCopy(world, pos, player, hand);
             } else if (stack.getItem() instanceof ItemSpooky && !player.isSecondaryUseActive()) {
                 return this.interactJovial(world, pos, player, hand, 1);
             } else if (stack.getItem() instanceof ItemXmas && !player.isSecondaryUseActive()) {
@@ -193,30 +191,7 @@ public abstract class BlockIronFurnaceBase extends Block implements EntityBlock 
         return InteractionResult.SUCCESS;
     }
 
-    private InteractionResult interactCopy(Level world, BlockPos pos, Player player, InteractionHand handIn) {
-        ItemStack stack = player.getInventory().getItem(player.getInventory().getSelectedSlot());
-        if (!(stack.getItem() instanceof ItemFurnaceCopy)) {
-            return InteractionResult.SUCCESS;
-        }
-        BlockEntity te = world.getBlockEntity(pos);
-        if (!(te instanceof BlockIronFurnaceTileBase)) {
-            return InteractionResult.SUCCESS;
-        }
 
-        int[] settings = new int[((BlockIronFurnaceTileBase) te).furnaceSettings.size()];
-        for (int i = 0; i < ((BlockIronFurnaceTileBase) te).furnaceSettings.size(); i++)
-        {
-            settings[i] = ((BlockIronFurnaceTileBase) te).furnaceSettings.get(i);
-        }
-        
-        CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
-        tag.putIntArray("settings", settings);
-        stack.set(DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.of(tag));
-
-        ((BlockIronFurnaceTileBase)te).onUpdateSent();
-        player.sendSystemMessage(Component.literal("Settings copied"));
-        return InteractionResult.SUCCESS;
-    }
 
     private InteractionResult interactAugment(Level world, BlockPos pos, Player player, InteractionHand handIn) {
         ItemStack stack = player.getItemInHand(handIn);

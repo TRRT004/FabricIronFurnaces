@@ -56,11 +56,6 @@ public class IronFurnacesClient implements ClientModInitializer {
             Reference.SILVER_FURNACE_SCREEN_HANDLER,
             BlockSilverFurnaceScreen::new
         );
-
-        MenuScreens.register(
-            Reference.WIRELESS_HEATER_SCREEN_HANDLER,
-            BlockWirelessHeaterScreen::new
-        );
     }
 
     public static boolean isShiftKeyDown() {

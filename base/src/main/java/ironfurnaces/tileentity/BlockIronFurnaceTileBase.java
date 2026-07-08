@@ -275,7 +275,7 @@ public abstract class BlockIronFurnaceTileBase extends TileEntityInventory imple
             if (e.isBurning() || !itemstack.isEmpty() && !e.inventory.get(0).isEmpty()) {
                 RecipeHolder<?> irecipe = e.level.getServer().getRecipeManager().getRecipeFor(e.recipeType, new net.minecraft.world.item.crafting.SingleRecipeInput(e.getItem(0)), e.level).orElse(null);
                 if (!e.isBurning() && e.canSmelt(irecipe)) {
-                    if (itemstack.getItem() instanceof ItemHeater) {
+                    if (itemstack.getItem() instanceof ironfurnaces.api.IHeaterItem) {
                         CompoundTag tag = itemstack.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
                         Optional<Integer> xOpt = tag.getInt("X");
                         Optional<Integer> yOpt = tag.getInt("Y");
@@ -285,10 +285,10 @@ public abstract class BlockIronFurnaceTileBase extends TileEntityInventory imple
                             int y = yOpt.get();
                             int z = zOpt.get();
                             BlockEntity te = world.getBlockEntity(new BlockPos(x, y, z));
-                            if (te != null && te instanceof BlockWirelessHeaterTile) {
-                                double energy = ((BlockWirelessHeaterTile)te).getEnergy();
+                            if (te != null && te instanceof ironfurnaces.api.IHeaterSource) {
+                                double energy = ((ironfurnaces.api.IHeaterSource)te).getEnergy();
                                 if (energy >= IronFurnacesConfig.energy_usage) {
-                                    ((BlockWirelessHeaterTile)te).extractEnergy(IronFurnacesConfig.energy_usage);
+                                    ((ironfurnaces.api.IHeaterSource)te).extractEnergy(IronFurnacesConfig.energy_usage);
                                     int fuel = (getFuelTime(world, new ItemStack(Items.COAL)) / 8);
                                     if (!e.getItem(3).isEmpty() && e.getItem(3).is(Reference.FUEL_AUGMENT_TAG)) {
                                         e.furnaceBurnTime = (fuel * 2) * e.getCookTime() / 200;
@@ -313,7 +313,7 @@ public abstract class BlockIronFurnaceTileBase extends TileEntityInventory imple
                     e.currentItemBurnTime = e.furnaceBurnTime;
                     if (e.isBurning()) {
                         flag1 = true;
-                        if (!(itemstack.getItem() instanceof ItemHeater)) {
+                        if (!(itemstack.getItem() instanceof ironfurnaces.api.IHeaterItem)) {
                             if (!itemstack.isEmpty()) {
                                 Item item = itemstack.getItem();
                                 itemstack.shrink(1);
@@ -820,7 +820,7 @@ public abstract class BlockIronFurnaceTileBase extends TileEntityInventory imple
     }
 
     public static boolean isItemFuel(@Nullable Level level, ItemStack stack) {
-        return getFuelTime(level, stack) > 0 || stack.getItem() instanceof ItemHeater;
+        return getFuelTime(level, stack) > 0 || stack.getItem() instanceof ironfurnaces.api.IHeaterItem;
     }
 
 
@@ -877,7 +877,7 @@ public abstract class BlockIronFurnaceTileBase extends TileEntityInventory imple
             return this.level.recipeAccess().propertySet(key).test(stack);
         } else if (index == FUEL) {
             ItemStack itemstack = this.inventory.get(FUEL);
-            return getFuelTime(this.level, stack) > 0 || (stack.getItem() == Items.BUCKET && itemstack.getItem() != Items.BUCKET) || stack.getItem() instanceof ItemHeater;
+            return getFuelTime(this.level, stack) > 0 || (stack.getItem() == Items.BUCKET && itemstack.getItem() != Items.BUCKET) || stack.getItem() instanceof ironfurnaces.api.IHeaterItem;
         }
         return false;
     }
