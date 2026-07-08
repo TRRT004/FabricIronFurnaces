@@ -5,8 +5,8 @@ import net.fabricmc.api.ModInitializer;
 
 public class IronFurnaces implements ModInitializer {
 
-    @Override
-    public void onInitialize() {
-        Reference.init();
-    }
+	@Override
+	public void onInitialize() {
+		Reference.init();
+	}
 }

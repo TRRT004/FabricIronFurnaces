@@ -9,17 +9,20 @@ import net.minecraft.ChatFormatting;
 
 public class ItemAugmentBlasting extends Item {
 
-    public ItemAugmentBlasting() {
-        super(new Item.Properties().setId(net.minecraft.resources.ResourceKey.create(
-            net.minecraft.core.registries.Registries.ITEM, 
-            net.minecraft.resources.Identifier.fromNamespaceAndPath("ironfurnaces_augments", "augment_blasting")
-        )));
-    }
+	public ItemAugmentBlasting() {
+		super(new Item.Properties().setId(net.minecraft.resources.ResourceKey.create(
+				net.minecraft.core.registries.Registries.ITEM,
+				net.minecraft.resources.Identifier.fromNamespaceAndPath("ironfurnaces_augments", "augment_blasting"))));
+	}
 
-    @Environment(EnvType.CLIENT)
-    @Override
-    public void appendHoverText(ItemStack stack, Item.TooltipContext context, net.minecraft.world.item.component.TooltipDisplay display, java.util.function.Consumer<Component> tooltip, net.minecraft.world.item.TooltipFlag flag) {
-        tooltip.accept(Component.translatable("tooltip.ironfurnaces_augments.augment_blasting_pro").withStyle(ChatFormatting.GREEN));
-        tooltip.accept(Component.translatable("tooltip.ironfurnaces_augments.augment_blasting_con").withStyle(ChatFormatting.DARK_RED));
-    }
+	@Environment(EnvType.CLIENT)
+	@Override
+	public void appendHoverText(ItemStack stack, Item.TooltipContext context,
+			net.minecraft.world.item.component.TooltipDisplay display, java.util.function.Consumer<Component> tooltip,
+			net.minecraft.world.item.TooltipFlag flag) {
+		tooltip.accept(Component.translatable("tooltip.ironfurnaces_augments.augment_blasting_pro")
+				.withStyle(ChatFormatting.GREEN));
+		tooltip.accept(Component.translatable("tooltip.ironfurnaces_augments.augment_blasting_con")
+				.withStyle(ChatFormatting.DARK_RED));
+	}
 }

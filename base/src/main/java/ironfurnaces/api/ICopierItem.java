@@ -7,5 +7,5 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 
 public interface ICopierItem {
-    InteractionResult interactCopy(Level world, BlockPos pos, Player player, InteractionHand handIn);
+	InteractionResult interactCopy(Level world, BlockPos pos, Player player, InteractionHand handIn);
 }
